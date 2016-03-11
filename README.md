@@ -1,6 +1,8 @@
 # McProtocol
 
-**TODO: Add description**
+Implementation of the Minecraft protocol in Elixir.
+
+Aims to provide functional ways to interact with the minecraft protocol on all levels, including packet reading and writing, encryption, compression, authentication and more.
 
 ## Installation
 
