@@ -1,0 +1,2 @@
+defmodule McProtocol do
+end
