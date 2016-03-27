@@ -7,6 +7,8 @@ defmodule McProtocol.Mixfile do
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: description,
+     package: package,
      deps: deps]
   end
 
@@ -28,6 +30,25 @@ defmodule McProtocol.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [{:cutkey, github: "imtal/cutkey", optional: true},
-     {:uuid, "~> 1.1"}]
+     {:uuid, "~> 1.1"},
+     {:proto_def, path: "../proto_def/"},
+     {:mc_data, "~> 0.0.2"},
+     {:credo, "~> 0.3", only: [:dev, :test]}]
+  end
+
+  defp description do
+    """
+    Implementation of the Minecraft protocol in Elixir.
+    Aims to provide functional ways to interact with the minecraft protocol on all levels, including packet reading and writing, encryption, compression, authentication and more.
+    """
+  end
+
+  defp package do
+    [
+      files: ["lib", "priv", "mix.exs", "README*", "LICENSE*"],
+      maintainers: ["hansihe"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/hansihe/elixir_mc_protocol"},
+    ]
   end
 end

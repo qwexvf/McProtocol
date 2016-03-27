@@ -5,13 +5,17 @@ defmodule McProtocol.NBT do
 
   defmodule Read do
     # GZip
-    def read_gzip(bin) do
-      read(:zlib.gunzip(bin))
+    def read_gzip(bin, optional \\ false) do
+      read(:zlib.gunzip(bin), optional)
     end
-    def read(bin) do
-      {bin, _} = read_tag_id(bin)
-      {bin, data} = read_tag(bin, :compound)
-      {bin, data}
+    def read(bin, optional \\ false) do
+      {bin, start_tag} = read_tag_id(bin)
+      if optional and start_tag == :end do
+        nil
+      else
+        {bin, data} = read_tag(bin, :compound)
+        {bin, data}
+      end
     end
 
     defp read_tag_id(<<tag_id::8, bin::binary>>) do
@@ -97,9 +101,13 @@ defmodule McProtocol.NBT do
   end
   
   defmodule Write do
-    def write(struct) do
-      {:compound, name, value} = struct
-      IO.iodata_to_binary write_tag(:compound, name, value)
+    def write(struct, optional \\ false) do
+      if (!struct or (struct == :nil)) and optional do
+        write_tag_id(:end)
+      else
+        {:compound, name, value} = struct
+        write_tag(:compound, name, value)
+      end
     end
 
     defp write_tag_id(tag) do

@@ -161,8 +161,9 @@ defmodule McProtocol.DataTypes do
     end
 
     @spec varint(integer) :: binary
-    def varint(int) do
-      :gpb.encode_varint(int)
+    def varint(num) when num <= 127, do: num
+    def varint(num) when num >= 128 do
+      <<1::1, band(num, 127)::7, varint(num >>> 7)::binary>>
     end
 
     @spec bool(boolean) :: binary
