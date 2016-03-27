@@ -3,24 +3,33 @@ defmodule McProtocol.DataTypes do
   use Bitwise
 
   defmodule ChatMessage do
+    @moduledoc false
+
     defstruct [:text, :translate, :with, :score, :selector, :extra,
       :bold, :italic, :underligned, :strikethrough, :obfuscated, :color, 
       :clickEvent, :hoverEvent, :insertion]
 
     defmodule Score do
+      @moduledoc false
       defstruct [:name, :objective]
     end
     defmodule ClickEvent do
+      @moduledoc false
       defstruct [:action, :value]
     end
     defmodule HoverEvent do
+      @moduledoc false
       defstruct [:action, :value]
     end
   end
 
   defmodule Slot do
+    @moduledoc false
     defstruct id: nil, count: 0, damage: 0, enchantments: []
-    defmodule Enchantment, do: defstruct [:id, :level]
+    defmodule Enchantment do
+      @moduledoc false
+      defstruct [:id, :level]
+    end
   end
 
   defmodule Decode do

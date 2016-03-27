@@ -33,7 +33,9 @@ defmodule McProtocol.Mixfile do
      {:uuid, "~> 1.1"},
      {:proto_def, path: "../proto_def/"},
      {:mc_data, "~> 0.0.2"},
-     {:credo, "~> 0.3", only: [:dev, :test]}]
+     {:credo, "~> 0.3", only: [:dev, :test]},
+     {:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.11", only: :dev}]
   end
 
   defp description do

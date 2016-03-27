@@ -1,8 +1,8 @@
 defmodule McProtocol.Handler.Login do
   @behaviour McProtocol.Handler
 
-  alias McProtocol.Packets.Client
-  alias McProtocol.Packets.Server
+  alias McProtocol.Packet.Client
+  alias McProtocol.Packet.Server
 
   def parent_handler, do: McProtocol.Handler.Handshake
 
@@ -15,10 +15,10 @@ defmodule McProtocol.Handler.Login do
     handle_packet(packet, state)
   end
 
-  def handle_packet(%Client.Login.LoginStart{name: name}, state) do
+  def handle_packet(%Client.Login.LoginStart{username: name}, state) do
     handle_start(!!state[:online_mode], name, state)
   end
-  def handle_packet(packet = %Client.Login.EncryptionResponse{}, state) do
+  def handle_packet(packet = %Client.Login.EncryptionBegin{}, state) do
     %{ shared_secret: encr_shared_secret, verify_token: encr_token } = packet
     %{ auth_init_data: {{pub_key, priv_key}, token}, name: name } = state
 
@@ -48,7 +48,7 @@ defmodule McProtocol.Handler.Login do
     auth_init_data = {{pubkey, _}, token} = McProtocol.Crypto.Login.get_auth_init_data
 
     transitions = [
-      {:send_packet, %Server.Login.EncryptionRequest{
+      {:send_packet, %Server.Login.EncryptionBegin{
           server_id: "", 
           public_key: pubkey, 
           verify_token: token
@@ -72,9 +72,9 @@ defmodule McProtocol.Handler.Login do
     {true, name, uuid} = state.user
 
     transitions = [
-      {:send_packet, %Server.Login.SetCompression{threshold: 256}},
+      {:send_packet, %Server.Login.Compress{threshold: 256}},
       {:set_compression, 256},
-      {:send_packet, %Server.Login.LoginSuccess{username: name, uuid: uuid}},
+      {:send_packet, %Server.Login.Success{username: name, uuid: uuid}},
       {:next, state},
     ]
 

@@ -1,8 +1,8 @@
 defmodule McProtocol.Handler.Status do
   @behaviour McProtocol.Handler
 
-  alias McProtocol.Packets.Client
-  alias McProtocol.Packets.Server
+  alias McProtocol.Packet.Client
+  alias McProtocol.Packet.Server
 
   def parent_handler, do: nil
 
@@ -15,12 +15,12 @@ defmodule McProtocol.Handler.Status do
     handle_packet(packet, state)
   end
 
-  def handle_packet(%Client.Status.Request{}, state) do
-    reply = %Server.Status.Response{response: server_list_response}
+  def handle_packet(%Client.Status.PingStart{}, state) do
+    reply = %Server.Status.ServerInfo{response: server_list_response}
     {[{:send_packet, reply}], state}
   end
-  def handle_packet(%Client.Status.Ping{payload: payload}, state) do
-    reply = %Server.Status.Pong{payload: payload}
+  def handle_packet(%Client.Status.Ping{time: payload}, state) do
+    reply = %Server.Status.Ping{time: payload}
     {[{:send_packet, reply}], state}
   end
 

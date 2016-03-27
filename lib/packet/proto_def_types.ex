@@ -1,4 +1,4 @@
-defmodule McProtocol.Packets.ProtoDefTypes do
+defmodule McProtocol.Packet.ProtoDefTypes do
 
   def types, do: %{
     "string" => {:inline, ["pstring", %{"countType" => "varint"}]},

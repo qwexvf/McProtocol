@@ -1,10 +1,11 @@
 defmodule McProtocol.NBT do
 
-  def read(bin), do: McProtocol.NBT.Read.read(bin)
-  def write(struct), do: McProtocol.NBT.Write.write(struct)
+  def read(bin, optional \\ false), do: McProtocol.NBT.Read.read(bin, optional)
+  def write(struct, optional \\ false), do: McProtocol.NBT.Write.write(struct, optional)
 
   defmodule Read do
-    # GZip
+    @moduledoc false
+
     def read_gzip(bin, optional \\ false) do
       read(:zlib.gunzip(bin), optional)
     end
@@ -101,6 +102,8 @@ defmodule McProtocol.NBT do
   end
   
   defmodule Write do
+    @moduledoc false
+
     def write(struct, optional \\ false) do
       if (!struct or (struct == :nil)) and optional do
         write_tag_id(:end)

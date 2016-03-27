@@ -1,4 +1,6 @@
 defmodule McProtocol.EntityMeta.Util do
+  @moduledoc false
+
   defmacro metatype(num, atom) do
     quote do
       def type_idx(unquote(atom)), do: unquote(num)
