@@ -10,10 +10,7 @@ defmodule McProtocol.Crypto.Login do
 
     hash_string = String.downcase(Integer.to_string(hash, 16))
 
-    case sign do
-      false -> hash_string
-      true -> "-" <> hash_string
-    end
+    if sign, do: hash_string, else: "-" <> hash_string
   end
 
   def verification_hash(secret, pubkey) do
@@ -21,8 +18,10 @@ defmodule McProtocol.Crypto.Login do
   end
 
   defmodule LoginVerifyResponse do
+    @moduledoc false
     defstruct [:id, :name]
   end
+
   def verify_user_login(pubkey, secret, name) do
     hash = verification_hash(secret, pubkey)
     query = URI.encode_query(%{username: name, serverId: hash})

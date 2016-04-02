@@ -11,7 +11,7 @@ defmodule McProtocol.Handler.Status do
   end
 
   def handle(packet_data, state) do
-    packet = Client.read_packet(packet_data, :status)
+    packet = McProtocol.Packet.read(:Client, :Status, packet_data)
     handle_packet(packet, state)
   end
 

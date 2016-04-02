@@ -24,19 +24,41 @@ ctx = ProtoDef.context |> McProtocol.Packet.ProtoDefTypes.add_types
 
 defmodule McProtocol.Packet do
 
+  @moduledoc """
+  Handles encoding and decoding of packets on the lowest level.
+
+  `packet bytes <-> packet struct`
+  """
+
   @callback read(binary) :: struct
   @callback write(struct) :: iolist
 
   @callback id :: non_neg_integer
+  @callback structure :: term
+
   @callback name :: atom
   @callback state :: atom
   @callback direction :: atom
+
+  @spec id_module(atom, atom, non_neg_integer) :: module
+  @doc """
+  Gets the packet module for the given direction, mode and id combination.
+
+  The returned module will have this module as it's behaviour.
+  """
+  def id_module(direction, mode, id)
+
+  @spec module_id(module) :: non_neg_integer
+  @doc """
+  Gets the packet id for the given packet module.
+  """
+  def module_id(module)
 
   for state_packets <- packets, {id, ident, type_name} <- state_packets.packets do
     module = McProtocol.Packet.Utils.make_module_name(state_packets.direction, state_packets.state, ident)
 
     def id_module(unquote(state_packets.direction), unquote(state_packets.state), unquote(id)), do: unquote(module)
-    def module_id(unquote(state_packets.direction), unquote(state_packets.state), unquote(module)), do: unquote(id)
+    def module_id(unquote(module)), do: unquote(id)
   end
 
   def write(%{__struct__: struct_mod} = struct) do
@@ -47,7 +69,12 @@ defmodule McProtocol.Packet do
   end
   def read(direction, state, id, data) do
     mod = id_module(direction, state, id)
-    apply(mod, :read, [data])
+    {resp, ""} = apply(mod, :read, [data])
+    resp
+  end
+  def read(direction, state, data) do
+    {id, data} = McProtocol.DataTypes.Decode.varint(data)
+    read(direction, state, id, data)
   end
 
 end
@@ -64,14 +91,16 @@ for mode <- packets, {id, ident, type_name} <- mode.packets do
     defstruct unquote(Macro.escape(fields))
 
     def read(unquote(ProtoDef.Type.data_var)) do
-      unquote(compiled.decoder_ast)
-      |> Map.put(:__struct__, __MODULE__)
+      {resp, rest} = unquote(compiled.decoder_ast)
+      resp = Map.put(resp, :__struct__, __MODULE__)
+      {resp, rest}
     end
     def write(%__MODULE__{} = inp) do
       unquote(ProtoDef.Type.input_var) = Map.delete(inp, :__struct__)
       unquote(compiled.encoder_ast)
     end
     def id, do: unquote(id)
+    def structure, do: unquote(Macro.escape(compiled.structure))
     def name, do: unquote(ident)
     def state, do: unquote(mode.state)
     def direction, do: unquote(mode.direction)

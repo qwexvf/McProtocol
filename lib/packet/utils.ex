@@ -17,7 +17,10 @@ defmodule McProtocol.Packet.Utils do
 
     Enum.map(id_mappings, fn {hex_id, packet_name} ->
       id = parse_hex_num(hex_id)
-      name = String.to_atom(Macro.camelize(packet_name))
+      name = packet_name
+      |> Macro.camelize
+      |> McProtocol.Packet.Overrides.packet_name
+      |> String.to_atom
       type_name = name_fields[packet_name]
       {id, name, type_name}
     end)

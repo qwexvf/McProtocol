@@ -1,12 +1,6 @@
 defmodule McProtocol.EntityMeta.Util do
   @moduledoc false
 
-  defmacro metatype(num, atom) do
-    quote do
-      def type_idx(unquote(atom)), do: unquote(num)
-      def idx_type(unquote(num)), do: unquote(atom)
-    end
-  end
   defmacro simple_reader(typ, fun) do
     quote do
       def read_type(unquote(typ), bin) do
@@ -22,14 +16,20 @@ defmodule McProtocol.EntityMeta do
   alias McProtocol.DataTypes.Encode
   import McProtocol.EntityMeta.Util
 
-  metatype(0, :byte)
-  metatype(1, :short)
-  metatype(2, :int)
-  metatype(3, :float)
-  metatype(4, :string)
-  metatype(5, :slot)
-  metatype(6, :pos)
-  metatype(7, :rot)
+  @type_idx %{
+    byte: 0,
+    short: 1,
+    int: 2,
+    float: 3,
+    string: 4,
+    slot: 5,
+    pos: 6,
+    rot: 7
+  }
+  @idx_type for {type, num} <- @type_idx, into: %{}, do: {num, type}
+
+  def type_idx(type), do: Map.fetch!(@type_idx, type)
+  def idx_type(idx), do: Map.fetch!(@idx_type, idx)
 
   def read(bin, meta \\ []), do: read_r(bin, meta)
   def read_r(<<127::unsigned-integer-1*8, rest::binary>>, meta), do: {meta, rest}

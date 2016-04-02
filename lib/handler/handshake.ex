@@ -1,6 +1,7 @@
 defmodule McProtocol.Handler.Handshake do
   @behaviour McProtocol.Handler
 
+  alias McProtocol.Packet
   alias McProtocol.Packet.Client
 
   def parent_handler, do: :connect
@@ -13,11 +14,11 @@ defmodule McProtocol.Handler.Handshake do
   def state_atom(2), do: :login
 
   def handle(packet_data, state) do
-    packet = Client.read_packet(packet_data, :init)
+    packet = Packet.read(:Client, :Handshake, packet_data)
     %Client.Handshake.SetProtocol{} = packet
 
     state = %{ state |
-      mode: state_atom(packet.next_mode)
+      mode: state_atom(packet.next_state)
     }
 
     case state.mode do

@@ -1,4 +1,6 @@
 defmodule McProtocol.DataTypes do
+  @moduledoc false
+
   # For <<< (left shift) operator
   use Bitwise
 
@@ -6,7 +8,7 @@ defmodule McProtocol.DataTypes do
     @moduledoc false
 
     defstruct [:text, :translate, :with, :score, :selector, :extra,
-      :bold, :italic, :underligned, :strikethrough, :obfuscated, :color, 
+      :bold, :italic, :underligned, :strikethrough, :obfuscated, :color,
       :clickEvent, :hoverEvent, :insertion]
 
     defmodule Score do
@@ -43,13 +45,13 @@ defmodule McProtocol.DataTypes do
     def varint?(data) do
       decode_varint(data, 0, 0)
     end
-    defp decode_varint(<<1::1, curr::7, rest::binary>>, num, acc) when num < (64-7) do
-      decode_varint(rest, num+7, (curr <<< num) + acc)
+    defp decode_varint(<<1::1, curr::7, rest::binary>>, num, acc) when num < (64 - 7) do
+      decode_varint(rest, num + 7, (curr <<< num) + acc)
     end
     defp decode_varint(<<0::1, curr::7, rest::binary>>, num, acc) do
       {:ok, {(curr <<< num) + acc, rest}}
     end
-    defp decode_varint(_, num, _) when num >= (64-7), do: :too_big
+    defp decode_varint(_, num, _) when num >= (64 - 7), do: :too_big
     defp decode_varint("", _, _), do: :incomplete
     defp decode_varint(_, _, _), do: :error
 

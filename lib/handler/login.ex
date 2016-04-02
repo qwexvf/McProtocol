@@ -11,7 +11,7 @@ defmodule McProtocol.Handler.Login do
   end
 
   def handle(packet_data, state) do
-    packet = Client.read_packet(packet_data, :login)
+    packet = McProtocol.Packet.read(:Client, :Login, packet_data)
     handle_packet(packet, state)
   end
 
@@ -49,8 +49,8 @@ defmodule McProtocol.Handler.Login do
 
     transitions = [
       {:send_packet, %Server.Login.EncryptionBegin{
-          server_id: "", 
-          public_key: pubkey, 
+          server_id: "",
+          public_key: pubkey,
           verify_token: token
         }}
     ]
@@ -71,10 +71,13 @@ defmodule McProtocol.Handler.Login do
   def finish_login(state) do
     {true, name, uuid} = state.user
 
+    # TODO: Don't make this conversion, should be done in encoder
+    uuid_str = McProtocol.UUID.hex_hyphen(uuid)
+
     transitions = [
       {:send_packet, %Server.Login.Compress{threshold: 256}},
       {:set_compression, 256},
-      {:send_packet, %Server.Login.Success{username: name, uuid: uuid}},
+      {:send_packet, %Server.Login.Success{username: name, uuid: uuid_str}},
       {:next, state},
     ]
 

@@ -68,7 +68,8 @@ defmodule McProtocol.Acceptor.Connection do
     {packets, read_state} = McProtocol.Transport.Read.process(data, state.read_state)
     state = %{ state | read_state: read_state }
 
-    state = Enum.reduce(packets, state, fn(packet, inner_state) ->
+    state = packets
+    |> Enum.reduce(state, fn(packet, inner_state) ->
       handler_args = [packet, inner_state.handler_state]
       {transitions, handler_state} = apply(inner_state.handler, :handle, handler_args)
       inner_state = %{ inner_state | handler_state: handler_state }
@@ -90,7 +91,7 @@ defmodule McProtocol.Acceptor.Connection do
 
   defp out_write_struct(packet, state) do
     packet_data = try do
-      McProtocol.Packets.Server.write_packet(packet)
+      McProtocol.Packet.write(packet)
     rescue
       error -> handle_write_error(error, packet, state)
     end

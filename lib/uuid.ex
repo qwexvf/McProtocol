@@ -1,4 +1,11 @@
 defmodule McProtocol.UUID do
+
+  @moduledoc """
+  Utilities for working with UUIDs in Minecraft.
+
+  Can deal with both hyphenated, unhyphenated and binary UUIDs.
+  """
+
   defstruct bin: nil, hex: nil
 
   def uuid4 do
@@ -6,9 +13,9 @@ defmodule McProtocol.UUID do
   end
 
   @spec from_hex(str) :: %McProtocol.UUID{} | :error when str: binary
-  def from_hex(str) when byte_size(str) == 32 do
-    case Base.decode16(str, case: :lower) do
-      {:ok, bin} -> %McProtocol.UUID { hex: str, bin: bin }
+  def from_hex(hex_data) when byte_size(hex_data) == 32 do
+    case Base.decode16(hex_data, case: :lower) do
+      {:ok, bin_data} -> %McProtocol.UUID { hex: hex_data, bin: bin_data }
       _ -> :error
     end
   end
@@ -17,19 +24,20 @@ defmodule McProtocol.UUID do
   end
 
   @spec from_bin(bin) :: %McProtocol.UUID{} when bin: binary
-  def from_bin(bin) when byte_size(bin) == 16 do
+  def from_bin(bin_data) when byte_size(bin_data) == 16 do
     %McProtocol.UUID {
-      bin: bin,
-      hex: Base.encode16(bin, case: :lower)
+      bin: bin_data,
+      hex: Base.encode16(bin_data, case: :lower)
     }
   end
 
-  def hex(%McProtocol.UUID{hex: hex}), do: hex
-  def hex_hyphen(%McProtocol.UUID{hex: hex}), do: hyphenize_string(hex)
-  def bin(%McProtocol.UUID{bin: bin}), do: bin
+  def hex(%McProtocol.UUID{hex: hex_data}), do: hex_data
+  def hex_hyphen(%McProtocol.UUID{hex: hex_data}), do: hyphenize_string(hex_data)
+  def bin(%McProtocol.UUID{bin: bin_data}), do: bin_data
 
-  def hyphenize_string(uuid) when byte_size(uuid) == 32 do
-    String.to_char_list(uuid)
+  defp hyphenize_string(uuid) when byte_size(uuid) == 32 do
+    uuid
+    |> String.to_char_list
     |> List.insert_at(20, "-") |> List.insert_at(16, "-") |> List.insert_at(12, "-") |> List.insert_at(8, "-")
     |> List.to_string
   end
