@@ -95,8 +95,9 @@ defmodule McProtocol.Acceptor.Connection do
 
     {:noreply, state}
   end
-  def handle_info({:tcp_closed, socket}, state = %State{socket: socket}) do
-    {:stop, :tcp_closed, state}
+  def handle_info({:tcp_closed = reason, socket}, state = %State{socket: socket}) do
+    Logger.info("Connection #{inspect self} closed: #{inspect reason}")
+    {:stop, {:shutdown, :tcp_closed}, state}
   end
 
   defp recv_once(state) do
