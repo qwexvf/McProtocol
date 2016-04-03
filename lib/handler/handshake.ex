@@ -1,29 +1,31 @@
 defmodule McProtocol.Handler.Handshake do
-  @behaviour McProtocol.Handler
+  use McProtocol.Handler
 
   alias McProtocol.Packet
   alias McProtocol.Packet.Client
 
   def parent_handler, do: :connect
 
-  def initial_state(proto_state = %{ mode: :init }) do
-    proto_state
+  def enter({:Client, :Handshake}, proto_state) do
+    {[], proto_state}
   end
 
-  def state_atom(1), do: :status
-  def state_atom(2), do: :login
+  def state_atom(1), do: :Status
+  def state_atom(2), do: :Login
 
-  def handle(packet_data, state) do
-    packet = Packet.read(:Client, :Handshake, packet_data)
-    %Client.Handshake.SetProtocol{} = packet
+  def handle(packet_in, state) do
+    packet_in = packet_in |> McProtocol.Packet.In.fetch_packet
+    packet = %Client.Handshake.SetProtocol{} = packet_in.packet
 
-    state = %{ state |
-      mode: state_atom(packet.next_state)
-    }
+    mode = state_atom(packet.next_state)
 
-    case state.mode do
-      :status -> {[{:next, McProtocol.Handler.Status, state}], state}
-      :login -> {[{:next, state}], state}
+    next = case mode do
+      :Status -> {:next, McProtocol.Handler.Status, state}
+      :Login -> {:next, state}
     end
+
+    {[{:set_mode, mode}, next], state}
   end
+
+  def leave(state), do: state
 end

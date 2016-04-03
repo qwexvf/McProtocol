@@ -34,12 +34,12 @@ defmodule McProtocol.Packet.ProtoDefTypes do
   def encode_slot(data), do: raise "TODO"
   def decode_slot(data), do: McProtocol.DataTypes.Decode.slot(data)
 
-  def encode_position(data) do
+  def encode_position({x, y, z}) do
+    <<x::signed-integer-26, y::signed-integer-12, z::signed-integer-26>>
+  end
+  def decode_position(data) do
     <<x::signed-integer-26, y::signed-integer-12, z::signed-integer-26, data::binary>> = data
     {{x, y, z}, data}
-  end
-  def decode_position({x, y, z}) do
-    <<x::signed-integer-26, y::signed-integer-12, z::signed-integer-26>>
   end
 
   def encode_entity_metadata(data), do: McProtocol.EntityMeta.write(data)

@@ -1,22 +1,25 @@
 defmodule McProtocol.Handler.Login do
-  @behaviour McProtocol.Handler
+  use McProtocol.Handler
 
   alias McProtocol.Packet.Client
   alias McProtocol.Packet.Server
 
   def parent_handler, do: McProtocol.Handler.Handshake
 
-  def initial_state(proto_state = %{ mode: :login }) do
-    proto_state
+  def enter({:Client, :Login}, proto_state) do
+    state = %{
+      protocol_state: proto_state,
+    }
+    {[], state}
   end
 
-  def handle(packet_data, state) do
-    packet = McProtocol.Packet.read(:Client, :Login, packet_data)
-    handle_packet(packet, state)
+  def handle(packet_in, state) do
+    packet_in = packet_in |> McProtocol.Packet.In.fetch_packet
+    handle_packet(packet_in.packet, state)
   end
 
   def handle_packet(%Client.Login.LoginStart{username: name}, state) do
-    handle_start(!!state[:online_mode], name, state)
+    handle_start(state.protocol_state.config.online_mode, name, state)
   end
   def handle_packet(packet = %Client.Login.EncryptionBegin{}, state) do
     %{ shared_secret: encr_shared_secret, verify_token: encr_token } = packet
@@ -78,9 +81,16 @@ defmodule McProtocol.Handler.Login do
       {:send_packet, %Server.Login.Compress{threshold: 256}},
       {:set_compression, 256},
       {:send_packet, %Server.Login.Success{username: name, uuid: uuid_str}},
+      {:set_mode, :Play},
       {:next, state},
     ]
 
     {transitions, state}
+  end
+
+  def leave(handler_state) do
+    %{ handler_state.protocol_state |
+       user: handler_state.user,
+     }
   end
 end

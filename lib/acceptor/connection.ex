@@ -8,6 +8,8 @@ defmodule McProtocol.Acceptor.Connection do
       read_state: nil,
       write_state: nil,
       protocol_handler: nil,
+      protocol_direction: nil,
+      protocol_mode: :Handshake,
       handler: nil,
       handler_state: nil,
       handler_stack: nil,
@@ -28,24 +30,34 @@ defmodule McProtocol.Acceptor.Connection do
 
   end
 
-  def start_link(socket, handler, opts \\ []) do
-    GenServer.start_link(__MODULE__, {socket, handler}, opts)
+  def start_link(socket, direction, handler, opts \\ []) do
+    GenServer.start_link(__MODULE__, {socket, direction, handler}, opts)
   end
 
-  def init({socket, handler}) do
-    initial_proto_state = %{
-      mode: :init,
-    }
+  def init({socket, direction, handler}) when direction in [:Client, :Server] do
     handler_stack = McProtocol.Handler.handler_stack(handler)
+
+    connection = %McProtocol.Acceptor.ProtocolState.Connection{
+      control: self,
+      read: self,
+      write: self,
+    }
+
+    proto_state = %McProtocol.Acceptor.ProtocolState{
+      connection: connection,
+    }
+
+    {transitions, handler_state} = apply(hd(handler_stack), :enter, [{direction, :Handshake}, proto_state])
     state = %State{
       socket: socket,
       read_state: McProtocol.Transport.Read.initial_state,
       write_state: McProtocol.Transport.Write.initial_state,
       handler: hd(handler_stack),
-      handler_state: apply(hd(handler_stack), :initial_state, [initial_proto_state]),
+      handler_state: handler_state,
       handler_stack: tl(handler_stack),
+      protocol_direction: direction,
     }
-    |> recv_once
+    state = apply_transitions(transitions, state) |> recv_once
 
     {:ok, state}
   end
@@ -55,6 +67,7 @@ defmodule McProtocol.Acceptor.Connection do
   end
   def handle_call({:die_with, pid}, _from, state) do
     Process.link(pid)
+    {:reply, :ok, state}
   end
 
   def handle_cast({:write_struct, packet_struct}, state) do
@@ -70,7 +83,9 @@ defmodule McProtocol.Acceptor.Connection do
 
     state = packets
     |> Enum.reduce(state, fn(packet, inner_state) ->
-      handler_args = [packet, inner_state.handler_state]
+      packet_in = McProtocol.Packet.In.construct(inner_state.protocol_direction,
+                                                 inner_state.protocol_mode, packet)
+      handler_args = [packet_in, inner_state.handler_state]
       {transitions, handler_state} = apply(inner_state.handler, :handle, handler_args)
       inner_state = %{ inner_state | handler_state: handler_state }
 
@@ -142,15 +157,29 @@ defmodule McProtocol.Acceptor.Connection do
   def apply_transition({:send_data, packet_data}, state) do
     out_write_data(packet_data, state)
   end
-  def apply_transition({:next, handler, proto_state}, state) do
+  def apply_transition({:set_mode, mode}, state) when mode in [:Handshake, :Status, :Login, :Play] do
     %{ state |
-      handler: handler,
-      handler_state: apply(handler, :initial_state, [proto_state]),
-    }
+       protocol_mode: mode,
+     }
   end
-  def apply_transition({:next, proto_state}, state) do
+  def apply_transition({:next, handler, last_handler_state}, state) do
+    transition_to_handler(handler, last_handler_state, state)
+  end
+  def apply_transition({:next, last_handler_state}, state) do
     stack = state.handler_stack
-    apply_transition({:next, hd(stack), proto_state}, %{ state | handler_stack: tl stack})
+    transition_to_handler(hd(stack), last_handler_state, %{state | handler_stack: tl(stack)})
+  end
+
+  defp transition_to_handler(handler, last_handler_state, state) do
+    proto_state = apply(state.handler, :leave, [last_handler_state])
+
+    enter_args = [{state.protocol_direction, state.protocol_mode}, proto_state]
+    {transitions, handler_state} = apply(handler, :enter, enter_args)
+
+    state = %{ state | handler: handler, handler_state: handler_state }
+    state = apply_transitions(transitions, state)
+
+    state
   end
 
 end

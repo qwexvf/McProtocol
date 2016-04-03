@@ -32,12 +32,16 @@ defmodule McProtocol.Handler do
   chain until control is given to your handler.
   """
 
+  @type protocol_direction :: :Client | :Server
+  @type protocol_mode :: :Handshake | :Status | :Login | :Play
+
   @type transition :: {:set_encryption, %McProtocol.Crypto.Transport.CryptData{}}
-                    | {:set_compression, integer}
-                    | {:send_packet, McProtocol.Packet.t}
-                    | {:send_data, iodata}
-                    | {:next, protocol_state}
-                    | {:next, handler, protocol_state}
+  | {:set_compression, integer}
+  | {:send_packet, McProtocol.Packet.t}
+  | {:send_data, iodata}
+  | {:set_mode, protocol_mode}
+  | {:next, protocol_state}
+  | {:next, handler, protocol_state}
 
   @type handler_state :: term
   @type protocol_state :: map
@@ -45,8 +49,19 @@ defmodule McProtocol.Handler do
   @type handler :: module
 
   @callback parent_handler :: handler | :connect | nil
-  @callback initial_state(protocol_state) :: handler_state
-  @callback handle(binary, handler_state) :: {[transition], handler_state}
+  @callback enter({protocol_direction, protocol_mode}, protocol_state) :: handler_state
+  @callback handle(%McProtocol.Packet.In{}, handler_state) :: {[transition], handler_state}
+  @callback leave(handler_state) :: protocol_state | :disconnect
+
+  defmacro __using__(opts) do
+    quote do
+      @behaviour McProtocol.Handler
+
+      def parent_handler, do: nil
+
+      defoverridable [parent_handler: 0]
+    end
+  end
 
   def handler_stack(handler) do
     handler_parents(handler, [])

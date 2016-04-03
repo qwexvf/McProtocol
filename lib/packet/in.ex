@@ -26,7 +26,7 @@ defmodule McProtocol.Packet.In do
   """
   def construct(direction, mode, raw) when direction in @directions and mode in @modes do
     # A packet always starts with a packet ID, read that.
-    {id, raw} = McProtocol.Datatypes.Decode.varint(raw)
+    {id, raw} = McProtocol.DataTypes.Decode.varint(raw)
     module = McProtocol.Packet.id_module(direction, mode, id)
 
     %__MODULE__{
