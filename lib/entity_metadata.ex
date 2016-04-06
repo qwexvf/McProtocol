@@ -78,6 +78,56 @@ defmodule McProtocol.EntityMeta do
 
 end
 
+defmodule McProtocol.EntityMeta.Names do
+
+  @types [
+    {:root, :entity,
+     [
+       {0, :byte, :entity_status},
+       {1, :short, :entity_air},
+       {2, :string, :entity_name_tag},
+       {3, :byte, :entity_always_show_name_tag},
+       {4, :byte, :entity_silent},
+     ]},
+    {:entity, :entity_lb,
+     [
+       {6, :float, :entity_lb_health},
+       {7, :int, :entity_lb_potion_effect_color},
+       {8, :byte, :entity_lb_potion_effect_ambient},
+       {9, :byte, :entity_lb_arrows},
+     ]},
+    {:entity_lb, :entity_l,
+     [
+       {15, :byte, :entity_l_ai_disabled},
+     ]},
+    {:entity_l, :human,
+     [
+       {10, :byte, :human_skin_flags},
+       # TODO: 16?
+       {17, :float, :human_absorption_hearts},
+       {18, :int, :human_score},
+     ]},
+    {:entity_l, :zombie,
+     [
+       {12, :byte, :zombie_is_child},
+       {13, :byte, :zombie_is_villager},
+       {14, :byte, :zombie_is_converting},
+     ]},
+  ]
+
+  for {parent_class, class, fields} <- @types do
+    for {id, type, ident} <- fields do
+      def name_id(unquote(class), unquote(ident)), do: {unquote(type), unquote(id)}
+      def id_name(unquote(class), unquote(id)), do: {unquote(type), unquote(ident)}
+    end
+    def name_id(unquote(class), dec_ident), do: name_id(unquote(parent_class), dec_ident)
+    def id_name(unquote(class), dec_id), do: id_name(unquote(parent_class), dec_id)
+  end
+  def id_name(:root, _), do: raise "Unknown metadata"
+  def name_id(:root, _), do: raise "Unknown metadata"
+
+end
+
 defmodule McProtocol.EntityMeta.Entity do
   defp t(true), do: 1
   defp t(false), do: 0

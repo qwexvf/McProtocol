@@ -8,11 +8,10 @@ defmodule McProtocol.Acceptor.Connection do
       read_state: nil,
       write_state: nil,
       protocol_handler: nil,
-      protocol_direction: nil,
-      protocol_mode: :Handshake,
       handler: nil,
       handler_state: nil,
       handler_stack: nil,
+      stash: nil,
     ]
 
     def set_encryption(state, encr = %McProtocol.Crypto.Transport.CryptData{}) do
@@ -43,11 +42,13 @@ defmodule McProtocol.Acceptor.Connection do
       write: self,
     }
 
-    proto_state = %McProtocol.Acceptor.ProtocolState{
+    stash = %McProtocol.Handler.Stash{
+      direction: direction,
       connection: connection,
     }
 
-    {transitions, handler_state} = apply(hd(handler_stack), :enter, [{direction, :Handshake}, proto_state])
+    {transitions, handler_state} = apply(hd(handler_stack), :enter, [stash])
+
     state = %State{
       socket: socket,
       read_state: McProtocol.Transport.Read.initial_state,
@@ -55,7 +56,7 @@ defmodule McProtocol.Acceptor.Connection do
       handler: hd(handler_stack),
       handler_state: handler_state,
       handler_stack: tl(handler_stack),
-      protocol_direction: direction,
+      stash: stash,
     }
     state = apply_transitions(transitions, state) |> recv_once
 
@@ -83,9 +84,9 @@ defmodule McProtocol.Acceptor.Connection do
 
     state = packets
     |> Enum.reduce(state, fn(packet, inner_state) ->
-      packet_in = McProtocol.Packet.In.construct(inner_state.protocol_direction,
-                                                 inner_state.protocol_mode, packet)
-      handler_args = [packet_in, inner_state.handler_state]
+      packet_in = McProtocol.Packet.In.construct(inner_state.stash.direction,
+                                                 inner_state.stash.mode, packet)
+      handler_args = [packet_in, inner_state.stash, inner_state.handler_state]
       {transitions, handler_state} = apply(inner_state.handler, :handle, handler_args)
       inner_state = %{ inner_state | handler_state: handler_state }
 
@@ -158,26 +159,30 @@ defmodule McProtocol.Acceptor.Connection do
   def apply_transition({:send_data, packet_data}, state) do
     out_write_data(packet_data, state)
   end
-  def apply_transition({:set_mode, mode}, state) when mode in [:Handshake, :Status, :Login, :Play] do
-    %{ state |
-       protocol_mode: mode,
+  def apply_transition({:stash, %McProtocol.Handler.Stash{} = stash}, state) do
+    %{state |
+      stash: stash,
      }
   end
-  def apply_transition({:next, handler, last_handler_state}, state) do
-    transition_to_handler(handler, last_handler_state, state)
+  def apply_transition({:next, handler}, state) do
+    transition_to_handler(handler, state)
   end
-  def apply_transition({:next, last_handler_state}, state) do
+  def apply_transition(:next, state) do
     stack = state.handler_stack
-    transition_to_handler(hd(stack), last_handler_state, %{state | handler_stack: tl(stack)})
+    transition_to_handler(hd(stack), %{state | handler_stack: tl(stack)})
   end
 
-  defp transition_to_handler(handler, last_handler_state, state) do
-    proto_state = apply(state.handler, :leave, [last_handler_state])
+  defp transition_to_handler(handler, state) do
+    # TODO: Handle :disconnect?
+    apply(state.handler, :leave, [state.stash, state.handler_state])
 
-    enter_args = [{state.protocol_direction, state.protocol_mode}, proto_state]
-    {transitions, handler_state} = apply(handler, :enter, enter_args)
+    {transitions, handler_state} = apply(handler, :enter, [state.stash])
 
-    state = %{ state | handler: handler, handler_state: handler_state }
+    state =
+      %{state |
+        handler: handler,
+        handler_state: handler_state
+       }
     state = apply_transitions(transitions, state)
 
     state

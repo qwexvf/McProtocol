@@ -6,25 +6,26 @@ defmodule McProtocol.Handler.Status do
 
   def parent_handler, do: nil
 
-  def enter({:Client, :Status}, proto_state) do
-    {[], proto_state}
+  def enter(%{direction: :Client, mode: :Status}) do
+    {[], nil}
   end
 
-  def handle(packet_data, state) do
+  def handle(packet_data, stash, s) do
+    IO.inspect s
     packet_data = packet_data |> McProtocol.Packet.In.fetch_packet
-    handle_packet(packet_data.packet, state)
+    handle_packet(packet_data.packet)
   end
 
-  def handle_packet(%Client.Status.PingStart{}, state) do
+  def handle_packet(%Client.Status.PingStart{}) do
     reply = %Server.Status.ServerInfo{response: server_list_response}
-    {[{:send_packet, reply}], state}
+    {[{:send_packet, reply}], nil}
   end
-  def handle_packet(%Client.Status.Ping{time: payload}, state) do
+  def handle_packet(%Client.Status.Ping{time: payload}) do
     reply = %Server.Status.Ping{time: payload}
-    {[{:send_packet, reply}], state}
+    {[{:send_packet, reply}], nil}
   end
 
-  def leave(handler_state), do: :disconnect
+  def leave(_stash, nil), do: :disconnect
 
   def server_list_response do
     Poison.encode!(%{

@@ -1,0 +1,301 @@
+[
+    {
+        "class": "entity",
+        "fields": [
+            [0, "byte", "flags"],
+            [1, "short", "air"],
+            [2, "string", "nameTag"],
+            [3, "byte", "alwaysShowNameTag"],
+            [4, "byte", "silent"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "entityLivingBase",
+        "fields": [
+            [6, "float", "health"],
+            [7, "int", "potionEffectColor"],
+            [8, "byte", "potionEffectAmbient"],
+            [9, "byte", "numArrows"]
+        ]
+    },
+    {
+        "parentClass": "entityLivingBase",
+        "class": "entityLiving",
+        "fields": [
+            [15, "byte", "aiDisabled"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "ageable",
+        "fields": [
+            [12, "byte", "entityAge"]
+        ]
+    },
+    {
+        "parentClass": "entityLivingBase",
+        "class": "armorStand",
+        "fields": [
+            [10, "byte", "flags"],
+            [11, "rot", "headPosition"],
+            [12, "rot", "bodyPosition"],
+            [13, "rot", "leftArmPosition"],
+            [14, "rot", "rightArmPosition"],
+            [15, "rot", "leftLegPosition"],
+            [16, "rot", "rightLegPosition"],
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "human",
+        "fields": [
+            [10, "byte", "skinFlags"],
+            [17, "float", "absorptionHearts"],
+            [18, "int", "score"]
+        ]
+    },
+    {
+        "parentClass": "ageable",
+        "class": "horse",
+        "fields": [
+            [16, "int", "horseFlags"],
+            [19, "byte", "horseType"],
+            [20, "int", "horseColors"],
+            [21, "string", "ownerName"],
+            [22, "int", "horseArmor"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "bat",
+        "fields": [
+            [16, "byte", "hanging"]
+        ]
+    },
+    {
+        "parentClass": "ageable",
+        "class": "tameable",
+        "fields": [
+            [16, "byte", "flags"],
+            [17, "string", "ownerName"]
+        ]
+    },
+    {
+        "parentClass": "tameable",
+        "class": "ocelot",
+        "fields": [
+            [18, "byte", "type"]
+        ]
+    },
+    {
+        "parentClass": "tameable",
+        "class": "wolf",
+        "fields": [
+            [16, "byte", "flags"],
+            [18, "float", "health"],
+            [19, "byte", "begging"],
+            [20, "byte", "collarColor"]
+        ]
+    },
+    {
+        "parentClass": "ageable",
+        "class": "pig",
+        "fields": [
+            [16, "byte", "hasSaddle"]
+        ]
+    },
+    {
+        "parentClass": "ageable",
+        "class": "rabbit",
+        "fields": [
+            [18, "byte", "rabbitType"]
+        ]
+    },
+    {
+        "parentClass": "ageable",
+        "class": "sheep",
+        "fields": [
+            [16, "byte", "woolFlags"]
+        ]
+    },
+    {
+        "parentClass": "ageable",
+        "class": "villager",
+        "fields": [
+            [16, "int", "villagerType"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "enderman",
+        "fields": [
+            [16, "short", "carriedBlock"],
+            [17, "byte", "carriedBlockData"],
+            [18, "byte", "isScreaming"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "zombie",
+        "fields": [
+            [12, "byte", "isChild"],
+            [13, "byte", "isVillager"],
+            [14, "byte", "isConverting"]
+        ]
+    },
+    {
+        "parentClass": "zombie",
+        "class": "zombiePigman",
+        "fields": []
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "blaze",
+        "fields": [
+            [16, "byte", "onFire"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "spider",
+        "fields": [
+            [16, "byte", "climbing"]
+        ]
+    },
+    {
+        "parentClass": "spider",
+        "class": "caveSpider",
+        "fields": []
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "creeper",
+        "fields": [
+            [16, "byte", "fuseState"],
+            [17, "byte", "isPowered"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "ghast",
+        "fields": [
+            [16, "byte", "isAttacking"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "slime",
+        "fields": [
+            [16, "byte", "size"]
+        ]
+    },
+    {
+        "parentClass": "slime",
+        "class": "magmaCube",
+        "fields": []
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "skeleton",
+        "fields": [
+            [13, "byte", "type"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "witch",
+        "fields": [
+            [21, "byte", "isAggressive"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "ironGolem",
+        "fields": [
+            [16, "byte", "isAggressive"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "wither",
+        "fields": [
+            [17, "int", "watchedTarget1"],
+            [18, "int", "watchedTarget2"],
+            [19, "int", "watchedTarget3"],
+            [20, "int", "invulnerableTime"]
+        ]
+    },
+    {
+        "parentClass": "entityLiving",
+        "class": "guardian",
+        "fields": [
+            [16, "byte", "flags"],
+            [17, "int", "targetEntityId"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "boat",
+        "fields": [
+            [17, "int", "timeSinceHit"],
+            [18, "int", "forwardDirection"],
+            [19, "float", "damageTaken"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "minecart",
+        "fields": [
+            [17, "int", "shakingPower"],
+            [18, "int", "shakingDirection"],
+            [19, "float", "damageTakenOrShakingMultiplier"],
+            [20, "int", "block"],
+            [21, "int", "blockYPos"],
+            [22, "byte", "showBlock"]
+        ]
+    },
+    {
+        "parentClass": "minecart",
+        "class": "furnaceMinecart",
+        "fields": [
+            [16, "byte", "isPowered"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "item",
+        "fields": [
+            [10, "slot", "item"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "arrow",
+        "fields": [
+            [16, "byte", "isCritical"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "firework",
+        "fields": [
+            [8, "slot", "fireworkInfo"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "itemFrame",
+        "fields": [
+            [8, "slot", "item"],
+            [9, "byte", "rotation"]
+        ]
+    },
+    {
+        "parentClass": "entity",
+        "class": "enderCrystal",
+        "fields": [
+            [8, "int", "health"]
+        ]
+    },
+]

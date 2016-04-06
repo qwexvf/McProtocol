@@ -9,6 +9,7 @@ erl_crash.dump
 /rel
 /doc
 *.beam
+/bench
 
 
 ### Vim ###

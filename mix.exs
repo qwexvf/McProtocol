@@ -35,7 +35,8 @@ defmodule McProtocol.Mixfile do
      {:mc_data, "~> 0.0.2"},
      {:credo, "~> 0.3", only: [:dev, :test]},
      {:earmark, "~> 0.1", only: :dev},
-     {:ex_doc, "~> 0.11", only: :dev}]
+     {:ex_doc, "~> 0.11", only: :dev},
+     {:benchfella, "~> 0.3.0", only: [:dev, :test]}]
   end
 
   defp description do

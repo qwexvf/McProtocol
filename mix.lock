@@ -1,4 +1,5 @@
-%{"bunt": {:hex, :bunt, "0.1.5"},
+%{"benchfella": {:hex, :benchfella, "0.3.2"},
+  "bunt": {:hex, :bunt, "0.1.5"},
   "credo": {:hex, :credo, "0.3.6"},
   "cutkey": {:git, "https://github.com/imtal/cutkey.git", "67375ea3d2ee3c729bc9a93baca447203930fd12", []},
   "earmark": {:hex, :earmark, "0.2.1"},

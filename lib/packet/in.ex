@@ -12,12 +12,14 @@ defmodule McProtocol.Packet.In do
   decoded.
   """
 
+  @type t :: %__MODULE__{}
+
   @directions [:Client, :Server]
   @modes [:Handshake, :Status, :Login, :Play]
 
   defstruct direction: nil, mode: nil, id: nil, module: nil, raw: nil, packet: nil
 
-  @spec construct(atom, atom, binary) :: %McProtocol.Packet.In{}
+  @spec construct(atom, atom, binary) :: t
   @doc """
   Constructs a new In struct, without decoding the packet data. This function would most
   likely be used in the part of your application that receives the packets from the network.
@@ -38,7 +40,7 @@ defmodule McProtocol.Packet.In do
     }
   end
 
-  @spec fetch_packet(%McProtocol.Packet.In{}) :: %McProtocol.Packet.In{}
+  @spec fetch_packet(%McProtocol.Packet.In{}) :: t
   @doc """
   Ensures that the packet is decoded. After this call has succeeded, the packet field of
   the returned struct is guaranteed to be set.

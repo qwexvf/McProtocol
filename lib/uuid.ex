@@ -6,13 +6,15 @@ defmodule McProtocol.UUID do
   Can deal with both hyphenated, unhyphenated and binary UUIDs.
   """
 
+  @type t :: %__MODULE__{}
+
   defstruct bin: nil, hex: nil
 
   def uuid4 do
     from_hex(String.replace(UUID.uuid4, "-", ""))
   end
 
-  @spec from_hex(str) :: %McProtocol.UUID{} | :error when str: binary
+  @spec from_hex(str) :: t | :error when str: binary
   def from_hex(hex_data) when byte_size(hex_data) == 32 do
     case Base.decode16(hex_data, case: :lower) do
       {:ok, bin_data} -> %McProtocol.UUID { hex: hex_data, bin: bin_data }
@@ -23,7 +25,7 @@ defmodule McProtocol.UUID do
     from_hex(String.replace(str, "-", ","))
   end
 
-  @spec from_bin(bin) :: %McProtocol.UUID{} when bin: binary
+  @spec from_bin(bin) :: t when bin: binary
   def from_bin(bin_data) when byte_size(bin_data) == 16 do
     %McProtocol.UUID {
       bin: bin_data,

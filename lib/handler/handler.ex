@@ -35,23 +35,23 @@ defmodule McProtocol.Handler do
   @type protocol_direction :: :Client | :Server
   @type protocol_mode :: :Handshake | :Status | :Login | :Play
 
-  @type transition :: {:set_encryption, %McProtocol.Crypto.Transport.CryptData{}}
+  @type transition ::{:set_encryption, %McProtocol.Crypto.Transport.CryptData{}}
   | {:set_compression, integer}
   | {:send_packet, McProtocol.Packet.t}
   | {:send_data, iodata}
-  | {:set_mode, protocol_mode}
-  | {:next, protocol_state}
-  | {:next, handler, protocol_state}
-
-  @type handler_state :: term
-  @type protocol_state :: map
+  | {:stash, Stash.t}
+  | {:handler_process, pid}
+  | :next
+  | {:next, handler}
+  @type transitions :: [transition]
 
   @type handler :: module
+  @type handler_state :: term
 
   @callback parent_handler :: handler | :connect | nil
-  @callback enter({protocol_direction, protocol_mode}, protocol_state) :: handler_state
-  @callback handle(%McProtocol.Packet.In{}, handler_state) :: {[transition], handler_state}
-  @callback leave(handler_state) :: protocol_state | :disconnect
+  @callback enter(Stash.t) :: {transitions, handler_state}
+  @callback handle(McProtocol.Packet.In.t, Stash.t, handler_state) :: {transitions, handler_state}
+  @callback leave(Stash.t, handler_state) :: nil | :disconnect
 
   defmacro __using__(opts) do
     quote do
@@ -61,6 +61,30 @@ defmodule McProtocol.Handler do
 
       defoverridable [parent_handler: 0]
     end
+  end
+
+  defmodule Stash do
+    @type t :: %__MODULE__{
+      direction: McProtocol.Handler.protocol_direction,
+      mode: McProtocol.Handler.protocol_mode,
+      connection: %McProtocol.Acceptor.ProtocolState.Connection{},
+      identity: %{authed: boolean, name: String.t, uuid: McProtocol.UUID.t} | nil,
+      entity_id: non_neg_integer,
+    }
+
+    defstruct(
+      direction: nil,
+      mode: :Handshake,
+      connection: nil,
+
+      # Stores player identity from the authentication protocol phase.
+      identity: nil,
+
+      # Because the entity id of a player can never change once it's set by the
+      # server, we need to keep track of this through the lifetime of the connection.
+      # Currently set statically to 0 for simplicity.
+      entity_id: 0,
+    )
   end
 
   def handler_stack(handler) do
