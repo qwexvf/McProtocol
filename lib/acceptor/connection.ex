@@ -7,11 +7,11 @@ defmodule McProtocol.Acceptor.Connection do
       socket: nil,
       read_state: nil,
       write_state: nil,
-      protocol_handler: nil,
       handler: nil,
       handler_state: nil,
-      handler_stack: nil,
       stash: nil,
+      orch_module: nil,
+      orch_pid: nil,
     ]
 
     def set_encryption(state, encr = %McProtocol.Crypto.Transport.CryptData{}) do
@@ -29,13 +29,11 @@ defmodule McProtocol.Acceptor.Connection do
 
   end
 
-  def start_link(socket, direction, handler, opts \\ []) do
-    GenServer.start_link(__MODULE__, {socket, direction, handler}, opts)
+  def start_link(socket, direction, orch_module, opts \\ []) do
+    GenServer.start_link(__MODULE__, {socket, direction, orch_module}, opts)
   end
 
-  def init({socket, direction, handler}) when direction in [:Client, :Server] do
-    handler_stack = McProtocol.Handler.handler_stack(handler)
-
+  def init({socket, direction, orch_module}) when direction in [:Client, :Server] do
     connection = %McProtocol.Acceptor.ProtocolState.Connection{
       control: self,
       read: self,
@@ -47,16 +45,19 @@ defmodule McProtocol.Acceptor.Connection do
       connection: connection,
     }
 
-    {transitions, handler_state} = apply(hd(handler_stack), :enter, [stash])
+    {:ok, orch_pid} = apply(orch_module, :start_link, [self])
+    {handler, params} = apply(orch_module, :next, [orch_pid, :connect])
+    {transitions, handler_state} = apply(handler, :enter, [params, stash])
 
     state = %State{
       socket: socket,
       read_state: McProtocol.Transport.Read.initial_state,
       write_state: McProtocol.Transport.Write.initial_state,
-      handler: hd(handler_stack),
+      handler: handler,
       handler_state: handler_state,
-      handler_stack: tl(handler_stack),
       stash: stash,
+      orch_module: orch_module,
+      orch_pid: orch_pid,
     }
     state = apply_transitions(transitions, state) |> recv_once
 
@@ -164,19 +165,12 @@ defmodule McProtocol.Acceptor.Connection do
       stash: stash,
      }
   end
-  def apply_transition({:next, handler}, state) do
-    transition_to_handler(handler, state)
-  end
-  def apply_transition(:next, state) do
-    stack = state.handler_stack
-    transition_to_handler(hd(stack), %{state | handler_stack: tl(stack)})
-  end
+  def apply_transition({:next, return}, state) do
+    {handler, params} = apply(state.orch_module, :next,
+                         [state.orch_pid, {state.handler, return}])
 
-  defp transition_to_handler(handler, state) do
-    # TODO: Handle :disconnect?
     apply(state.handler, :leave, [state.stash, state.handler_state])
-
-    {transitions, handler_state} = apply(handler, :enter, [state.stash])
+    {transitions, handler_state} = apply(handler, :enter, [params, state.stash])
 
     state =
       %{state |
@@ -186,6 +180,9 @@ defmodule McProtocol.Acceptor.Connection do
     state = apply_transitions(transitions, state)
 
     state
+  end
+  def apply_transition(:close, state) do
+    exit(:normal)
   end
 
 end

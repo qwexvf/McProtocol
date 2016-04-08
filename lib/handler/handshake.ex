@@ -4,9 +4,7 @@ defmodule McProtocol.Handler.Handshake do
   alias McProtocol.Packet
   alias McProtocol.Packet.Client
 
-  def parent_handler, do: :connect
-
-  def enter(%{direction: :Client, mode: :Handshake} = stash) do
+  def enter(_args, %{direction: :Client, mode: :Handshake} = stash) do
     {[], nil}
   end
 
@@ -19,21 +17,15 @@ defmodule McProtocol.Handler.Handshake do
 
     mode = state_atom(packet.next_state)
 
-    next = case mode do
-      :Status -> {:next, McProtocol.Handler.Status}
-      :Login -> :next
-    end
-
     transitions = [
       {:stash,
        %{stash |
          mode: mode,
        }},
-      next,
+      {:next, mode},
     ]
 
     {transitions, nil}
   end
 
-  def leave(_stash, nil), do: nil
 end

@@ -4,9 +4,7 @@ defmodule McProtocol.Handler.Login do
   alias McProtocol.Packet.Client
   alias McProtocol.Packet.Server
 
-  def parent_handler, do: McProtocol.Handler.Handshake
-
-  def enter(%{direction: :Client, mode: :Login}) do
+  def enter(_params, %{direction: :Client, mode: :Login}) do
     {[], %{}}
   end
 
@@ -93,11 +91,10 @@ defmodule McProtocol.Handler.Login do
          identity: state.identity,
          mode: :Play,
         }},
-      :next,
+      {:next, nil},
     ]
 
     {transitions, state}
   end
 
-  def leave(_stash, state), do: nil
 end

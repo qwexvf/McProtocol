@@ -41,25 +41,24 @@ defmodule McProtocol.Handler do
   | {:send_data, iodata}
   | {:stash, Stash.t}
   | {:handler_process, pid}
-  | :next
-  | {:next, handler}
+  | {:next, any}
+  | :close
   @type transitions :: [transition]
 
   @type handler :: module
   @type handler_state :: term
 
-  @callback parent_handler :: handler | :connect | nil
-  @callback enter(Stash.t) :: {transitions, handler_state}
+  @callback enter(any, Stash.t) :: {transitions, handler_state}
   @callback handle(McProtocol.Packet.In.t, Stash.t, handler_state) :: {transitions, handler_state}
-  @callback leave(Stash.t, handler_state) :: nil | :disconnect
+  @callback leave(Stash.t, handler_state) :: nil
 
   defmacro __using__(opts) do
     quote do
       @behaviour McProtocol.Handler
 
-      def parent_handler, do: nil
+      def leave(_stash, _handler_state), do: nil
 
-      defoverridable [parent_handler: 0]
+      defoverridable [leave: 2]
     end
   end
 
