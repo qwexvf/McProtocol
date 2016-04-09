@@ -9,6 +9,7 @@ defmodule McProtocol.Acceptor.Connection do
       write_state: nil,
       handler: nil,
       handler_state: nil,
+      handler_pid: nil,
       stash: nil,
       orch_module: nil,
       orch_pid: nil,
@@ -59,7 +60,9 @@ defmodule McProtocol.Acceptor.Connection do
       orch_module: orch_module,
       orch_pid: orch_pid,
     }
-    state = apply_transitions(transitions, state) |> recv_once
+    state = apply_transitions(transitions, state,
+                              {handler, :enter, params})
+    |> recv_once
 
     {:ok, state}
   end
@@ -91,7 +94,8 @@ defmodule McProtocol.Acceptor.Connection do
       {transitions, handler_state} = apply(inner_state.handler, :handle, handler_args)
       inner_state = %{ inner_state | handler_state: handler_state }
 
-      apply_transitions(transitions, inner_state)
+      apply_transitions(transitions, inner_state,
+                        {inner_state.handler, :next, packet_in})
     end)
     |> recv_once
 
@@ -144,7 +148,7 @@ defmodule McProtocol.Acceptor.Connection do
     end
   end
 
-  def apply_transitions(transitions, state) do
+  def apply_transitions(transitions, state, _error_context) do
     Enum.reduce(transitions, state, &(apply_transition(&1, &2)))
   end
 
@@ -165,6 +169,9 @@ defmodule McProtocol.Acceptor.Connection do
       stash: stash,
      }
   end
+  #def apply_transition({:handler_process, pid}, %{} = state) when is_pid(pid) do
+  #
+  #end
   def apply_transition({:next, return}, state) do
     {handler, params} = apply(state.orch_module, :next,
                          [state.orch_pid, {state.handler, return}])
@@ -177,7 +184,7 @@ defmodule McProtocol.Acceptor.Connection do
         handler: handler,
         handler_state: handler_state
        }
-    state = apply_transitions(transitions, state)
+    state = apply_transitions(transitions, state, {handler, :enter, params})
 
     state
   end
