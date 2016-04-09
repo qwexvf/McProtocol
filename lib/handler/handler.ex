@@ -41,6 +41,17 @@ defmodule McProtocol.Handler do
   receive movement packets and more from the client. Care should be taken to
   handle things like movement packets when returning the connection to the :reset
   play_mode.
+
+  When the connection play_mode is set to :reset, the connection is required to
+  be in the following state:
+
+  * Respawn or Join Game packet has just been sent. (as in not yet spawned in
+  world)
+  * Gamemode set is 0
+  * Dimension set is 0
+  * Difficulty set if 0
+  * Level type is "default"
+  * Reduced Debug Info is false
   """
   @type play_mode :: :init | :reset | :in_world | nil
 
@@ -110,7 +121,6 @@ defmodule McProtocol.Handler do
       connection: %McProtocol.Acceptor.ProtocolState.Connection{},
       identity: %{authed: boolean, name: String.t, uuid: McProtocol.UUID.t} | nil,
       entity_id: non_neg_integer,
-      has_spawned: boolean,
     }
 
     defstruct(
@@ -126,11 +136,6 @@ defmodule McProtocol.Handler do
       # server, we need to keep track of this through the lifetime of the connection.
       # Currently set statically to 0 for simplicity.
       entity_id: 0,
-
-      # If a player has not yet been spawned, we need to use the Play.Login packet.
-      # Once this has been sent once, this should be set to true.
-      # From then on, the Play.Respawn packet should be used.
-      has_spawned: false,
     )
   end
 

@@ -90,6 +90,7 @@ defmodule McProtocol.Handler.Login do
        %{stash |
          identity: state.identity,
          mode: :Play,
+         play_mode: :init,
         }},
       {:next, nil},
     ]
