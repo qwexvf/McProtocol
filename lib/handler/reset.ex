@@ -12,7 +12,7 @@ defmodule McProtocol.Handler.Reset do
          dimension: 0,
          difficulty: 0,
          max_players: 0, # TODO: What do?
-         level_type: 0,
+         level_type: "default",
          reduced_debug_info: false,
        }},
       {:stash, %{stash | play_mode: :reset}},
@@ -26,16 +26,16 @@ defmodule McProtocol.Handler.Reset do
 
     transitions = [
       {:send_packet,
-       %Server.Play.Respawn{
-         dimension: config.dimension,
-         difficulty: config.difficulty,
-         gamemode: config.game_mode,
-         level_type: config.level_type,
+       %Server.Play.Respawn{ # See the docs for McProtocol.Handler.play_mode
+         dimension: 0,
+         difficulty: 0,
+         gamemode: 0,
+         level_type: "default",
        }},
       {:send_packet,
        %Server.Play.EntityStatus{
          entity_id: stash.entity_id,
-         entity_status: (if config.reduced_debug_info, do: 22, else: 23),
+         entity_status: 23, # Reduced Debug Info: false
        }},
       {:send_packet,
        %Server.Play.KeepAlive{
