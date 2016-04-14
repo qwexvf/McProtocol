@@ -43,11 +43,7 @@ defmodule McProtocol.Packet.ProtoDefTypes do
   end
 
   def encode_entity_metadata(data), do: McProtocol.EntityMeta.write(data)
-  def decode_entity_metadata(data) do
-    # FIXME FIXME FIXME
-    {data, ret} = McProtocol.EntityMeta.read(data)
-    {ret, data}
-  end
+  def decode_entity_metadata(data), do: McProtocol.EntityMeta.read(data)
 
   def encode_uuid(data) do
     McProtocol.UUID.bin(data)

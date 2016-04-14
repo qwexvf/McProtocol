@@ -146,6 +146,12 @@ defmodule McProtocol.DataTypes do
       {num, data}
     end
 
+    def rotation(data) do
+      <<x::signed-float-4*8, y::signed-float-4*8, z::signed-float-4*8,
+      rest::binary>> =  data
+
+      {{x, y, z}, data}
+    end
     def position(data) do
       <<x::signed-integer-26, y::signed-integer-12, z::signed-integer-26, data::binary>> = data
       {{x, y, z}, data}

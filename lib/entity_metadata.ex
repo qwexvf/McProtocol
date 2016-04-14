@@ -1,140 +1,90 @@
-defmodule McProtocol.EntityMeta.Util do
-  @moduledoc false
-
-  defmacro simple_reader(typ, fun) do
-    quote do
-      def read_type(unquote(typ), bin) do
-        {val, bin} = unquote(fun)(bin)
-        {{unquote(typ), val}, bin}
-      end
-    end
-  end
-end
-
 defmodule McProtocol.EntityMeta do
-  alias McProtocol.DataTypes.Decode
-  alias McProtocol.DataTypes.Encode
-  import McProtocol.EntityMeta.Util
+  alias McProtocol.DataTypes.{Encode, Decode}
 
-  @type_idx %{
+  type_idx = [
     byte: 0,
-    short: 1,
-    int: 2,
-    float: 3,
-    string: 4,
+    varint: 1,
+    float: 2,
+    string: 3,
+    chat: 4,
     slot: 5,
-    pos: 6,
-    rot: 7
-  }
-  @idx_type for {type, num} <- @type_idx, into: %{}, do: {num, type}
-
-  def type_idx(type), do: Map.fetch!(@type_idx, type)
-  def idx_type(idx), do: Map.fetch!(@idx_type, idx)
-
-  def read(bin, meta \\ []), do: read_r(bin, meta)
-  def read_r(<<127::unsigned-integer-1*8, rest::binary>>, meta), do: {meta, rest}
-  def read_r(<<key::unsigned-integer-1*5, typ::unsigned-integer-1*3, rest::binary>>, meta) do
-    {val, rest} = read_type(typ, rest)
-    read_r(rest, [{key, val} | meta])
-  end
-
-  def read_type(typ, bin) when is_integer(typ), do: read_type(idx_type(typ), bin)
-  def read_type(:pos, bin) do
-    {e1, bin} = Decode.int(bin)
-    {e2, bin} = Decode.int(bin)
-    {e3, bin} = Decode.int(bin)
-    {{e1, e2, e3}, bin}
-  end
-  def read_type(:rot, bin) do
-    {e1, bin} = Decode.float(bin)
-    {e2, bin} = Decode.float(bin)
-    {e3, bin} = Decode.float(bin)
-    {{e1, e2, e3}, bin}
-  end
-  def read_type(typ, bin) when is_atom(typ) do
-    type_idx(typ)
-    {val, bin} = apply(Decode, typ, [bin])
-    {{typ, val}, bin}
-  end
-
-  # tail recursion you idiot
-  def write([]), do: <<127::unsigned-integer-1*8>>
-  def write([item | rest]) do
-    write_type(item) <> write(rest)
-  end
-
-  def write_type({key, typ, val}) when is_integer(key) do
-    idx = type_idx(typ)
-    <<key::unsigned-integer-1*5, idx::unsigned-integer-1*3, encode_type(typ, val)::binary>>
-  end
-
-  def encode_type(:pos, {e1, e2, e3}) do
-    Encode.int(e1) <> Encode.int(e2) <> Encode.int(e3)
-  end
-  def encode_type(:rot, {e1, e2, e3}) do
-    Encode.float(e1) <> Encode.float(e2) <> Encode.float(e3)
-  end
-  def encode_type(typ, val) when is_atom(typ), do: apply(Encode, typ, [val])
-
-end
-
-defmodule McProtocol.EntityMeta.Names do
-
-  @types [
-    {:root, :entity,
-     [
-       {0, :byte, :entity_status},
-       {1, :short, :entity_air},
-       {2, :string, :entity_name_tag},
-       {3, :byte, :entity_always_show_name_tag},
-       {4, :byte, :entity_silent},
-     ]},
-    {:entity, :entity_lb,
-     [
-       {6, :float, :entity_lb_health},
-       {7, :int, :entity_lb_potion_effect_color},
-       {8, :byte, :entity_lb_potion_effect_ambient},
-       {9, :byte, :entity_lb_arrows},
-     ]},
-    {:entity_lb, :entity_l,
-     [
-       {15, :byte, :entity_l_ai_disabled},
-     ]},
-    {:entity_l, :human,
-     [
-       {10, :byte, :human_skin_flags},
-       # TODO: 16?
-       {17, :float, :human_absorption_hearts},
-       {18, :int, :human_score},
-     ]},
-    {:entity_l, :zombie,
-     [
-       {12, :byte, :zombie_is_child},
-       {13, :byte, :zombie_is_villager},
-       {14, :byte, :zombie_is_converting},
-     ]},
+    boolean: 6,
+    rotation: 7,
+    position: 8,
+    opt_position: 9,
+    direction: 10,
+    opt_uuid: 11,
+    block_id: 12,
   ]
+  for {ident, num} <- type_idx do
+    def type_idx(unquote(ident)), do: unquote(num)
+    def idx_type(unquote(num)), do: unquote(ident)
+  end
 
-  for {parent_class, class, fields} <- @types do
-    for {id, type, ident} <- fields do
-      def name_id(unquote(class), unquote(ident)), do: {unquote(type), unquote(id)}
-      def id_name(unquote(class), unquote(id)), do: {unquote(type), unquote(ident)}
+  def read(<<0xff::unsigned-1*8, rest::binary>>, entries) do
+    {Enum.reverse(entries), rest}
+  end
+  def read(<<index::unsigned-1*8, rest::binary>>, entries) do
+    {type, value, rest} = read_type_body(rest)
+    read(rest, [{index, type, value} | entries])
+  end
+
+  defp read_type_body(<<type_num::unsigned-1*8, rest::binary>>) do
+    type = idx_type(type_num)
+    {value, rest} = read_type(rest, type)
+    {type, value, rest}
+  end
+
+  defp read_type(data, :byte), do: Decode.byte(data)
+  defp read_type(data, :varint), do: Decode.varint(data)
+  defp read_type(data, :float), do: Decode.float(data)
+  defp read_type(data, :string), do: Decode.string(data)
+  defp read_type(data, :chat), do: Decode.chat(data)
+  defp read_type(data, :slot), do: Decode.slot(data)
+  defp read_type(data, :boolean), do: Decode.bool(data)
+  defp read_type(data, :rotation), do: Decode.rotation(data)
+  defp read_type(data, :position), do: Decode.position(data)
+  defp read_type(data, :opt_position) do
+    {bool, data} = Decode.bool(data)
+    if bool do
+      Decode.position(data)
     end
-    def name_id(unquote(class), dec_ident), do: name_id(unquote(parent_class), dec_ident)
-    def id_name(unquote(class), dec_id), do: id_name(unquote(parent_class), dec_id)
   end
-  def id_name(:root, _), do: raise "Unknown metadata"
-  def name_id(:root, _), do: raise "Unknown metadata"
-
-end
-
-defmodule McProtocol.EntityMeta.Entity do
-  defp t(true), do: 1
-  defp t(false), do: 0
-
-  def status({on_fire, crouched, sprinting, using, invisible}) do
-    <<num::integer-1*8>> = <<0::integer-1*3, t(invisible)::integer-1*1, t(using)::integer-1*1, t(sprinting)::integer-1*1, 
-        t(crouched)::integer-1*1, t(on_fire)::integer-1*1>>
-    {0, :byte, num}
+  defp read_type(data, :direction) do
+    {direction, data} = Decode.varint(data)
+    case direction do
+      0 -> :down
+      1 -> :up
+      2 -> :north
+      3 -> :south
+      4 -> :west
+      5 -> :east
+      _ -> raise "Unknown direction: #{direction}"
+    end
   end
+  defp read_type(data, :opt_uuid) do
+    {bool, data} = Decode.bool(data)
+    if bool do
+      raise "unimplemented"
+    end
+  end
+  defp read_type(data, :block_id), do: Decode.varint(data)
+
+  def write(input), do: write_data(input, [])
+
+  defp write_data([], data), do: data
+  defp write_data([item | rest], data) do
+    write_data(rest, [data, write_item(item)])
+  end
+
+  defp write_item({index, type, value}) do
+    [<<index::unsigned-1*8>>, write_type(type, value)]
+  end
+
+  defp write_type(:byte, value), do: Encode.byte(value)
+  defp write_type(:varint, value), do: Encode.varint(value)
+  defp write_type(:float, value), do: Encode.float(value)
+  defp write_type(:string, value), do: Encode.string(value)
+  defp write_type(:chat, value), do: Encode.chat(value)
+
 end
