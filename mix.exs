@@ -32,7 +32,7 @@ defmodule McProtocol.Mixfile do
     [{:cutkey, github: "imtal/cutkey", optional: true},
      {:uuid, "~> 1.1"},
      {:proto_def, "~> 0.0.2"},
-     {:mc_data, "~> 0.0.3"},
+     {:mc_data, "~> 0.0.4"},
      {:credo, "~> 0.3", only: [:dev, :test]},
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
