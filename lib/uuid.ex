@@ -14,6 +14,13 @@ defmodule McProtocol.UUID do
     from_hex(String.replace(UUID.uuid4, "-", ""))
   end
 
+  def java_name_uuid(name) do
+    <<p1::48, _::4, p2::12, _::2, p3::62>> = :crypto.hash(:md5, name)
+    bin_uuid = <<p1::48, 3::4, p2::12, 2::2, p3::62>>
+
+    from_bin(bin_uuid)
+  end
+
   @spec from_hex(str) :: t | :error when str: binary
   def from_hex(hex_data) when byte_size(hex_data) == 32 do
     case Base.decode16(hex_data, case: :lower) do

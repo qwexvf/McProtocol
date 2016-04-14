@@ -69,7 +69,7 @@ defmodule McProtocol.Handler.Login do
   end
   # Offline
   def handle_start(false, name, stash, state) do
-    uuid = McProtocol.UUID.uuid4
+    uuid = McProtocol.UUID.java_name_uuid("OfflinePlayer:" <> name)
 
     state = state
     |> Map.put(:identity, %{online: false, name: name, uuid: uuid})
