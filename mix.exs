@@ -51,7 +51,7 @@ defmodule McProtocol.Mixfile do
       files: ["lib", "priv", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["hansihe"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/hansihe/elixir_mc_protocol"},
+      links: %{"GitHub" => "https://github.com/McEx/McProtocol"},
     ]
   end
 end

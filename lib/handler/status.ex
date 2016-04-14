@@ -4,20 +4,20 @@ defmodule McProtocol.Handler.Status do
   alias McProtocol.Packet.Client
   alias McProtocol.Packet.Server
 
-  def enter(_args, %{direction: :Client, mode: :Status}) do
-    {[], nil}
+  def enter(args, %{direction: :Client, mode: :Status}) do
+    {[], [response: server_list_response(Map.get(args, :response, %{}))]}
   end
 
-  def handle(packet_data, stash, _state) do
+  def handle(packet_data, stash, state) do
     packet_data = packet_data |> McProtocol.Packet.In.fetch_packet
-    handle_packet(packet_data.packet)
+    handle_packet(packet_data.packet, state)
   end
 
-  def handle_packet(%Client.Status.PingStart{}) do
-    reply = %Server.Status.ServerInfo{response: server_list_response}
-    {[{:send_packet, reply}], nil}
+  def handle_packet(%Client.Status.PingStart{}, [response: response] = state) do
+    reply = %Server.Status.ServerInfo{response: response}
+    {[{:send_packet, reply}], state}
   end
-  def handle_packet(%Client.Status.Ping{time: payload}) do
+  def handle_packet(%Client.Status.Ping{time: payload}, state) do
     reply = %Server.Status.Ping{time: payload}
 
     transitions = [
@@ -25,24 +25,25 @@ defmodule McProtocol.Handler.Status do
       :close,
     ]
 
-    {transitions, nil}
+    {transitions, state}
   end
 
-  def server_list_response do
-    Poison.encode!(%{
+  def server_list_response(response) do
+    %{
       version: %{
-        name: "1.8.7",
-        protocol: 47
+        name: "1.9.2",
+        protocol: 109,
       },
       players: %{
-        max: 100,
+        max: 0,
         online: 0,
       },
       description: %{
-        text: "Test server in elixir!"
+        text: "Minecraft server in Elixir!\nhttps://github.com/McEx/McProtocol",
       },
-      #favicon: PNG Data
-    })
+    }
+    |> Map.merge(response)
+    |> Poison.encode!
   end
 
 end
