@@ -1,4 +1,4 @@
-raw_data = McData.Protocol.protocol_data
+raw_data = McData.Protocol.protocol_data("1.9.2")
 
 packets = raw_data
 |> Enum.filter(fn {name, _} -> name != "types" end)
