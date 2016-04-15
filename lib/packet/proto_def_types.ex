@@ -31,7 +31,7 @@ defmodule McProtocol.Packet.ProtoDefTypes do
     end)
   end
 
-  def encode_slot(data), do: raise "TODO"
+  def encode_slot(data), do: McProtocol.DataTypes.Encode.slot(data)
   def decode_slot(data), do: McProtocol.DataTypes.Decode.slot(data)
 
   def encode_position({x, y, z}) do

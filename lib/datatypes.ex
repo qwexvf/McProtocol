@@ -27,11 +27,7 @@ defmodule McProtocol.DataTypes do
 
   defmodule Slot do
     @moduledoc false
-    defstruct id: nil, count: 0, damage: 0, enchantments: []
-    defmodule Enchantment do
-      @moduledoc false
-      defstruct [:id, :level]
-    end
+    defstruct id: nil, count: 0, damage: 0, nbt: nil
   end
 
   defmodule Decode do
@@ -78,23 +74,17 @@ defmodule McProtocol.DataTypes do
 
     def slot(data) do
       <<id::signed-integer-2*8, data::binary>> = data
-      slot_id(data, id)
+      slot_with_id(data, id)
     end
-    defp slot_id(data, -1), do: {%McProtocol.DataTypes.Slot{}, data}
-    defp slot_id(data, id) do
-      <<count::unsigned-integer-1*8, damage::unsigned-integer-2*8, has_nbt::unsigned-integer-1*8, data::binary>> = data
-      struct = %McProtocol.DataTypes.Slot{id: id, count: count, damage: damage}
-      case has_nbt do
-        0 -> {struct, data}
-        _ -> 
-          {ench, data} = slot_nbt(data)
-          {%{struct | enchantments: ench}, data}
-      end
+    defp slot_with_id(data, -1), do: {%McProtocol.DataTypes.Slot{}, data}
+    defp slot_with_id(data, id) do
+      <<count::unsigned-integer-1*8, damage::unsigned-integer-2*8, data::binary>> = data
+      {nbt, data} = slot_nbt(data)
+      struct = %McProtocol.DataTypes.Slot{id: id, count: count, damage: damage, nbt: nbt}
+      {struct, data}
     end
-    defp slot_nbt(data) do
-      {data, ench} = McProtocol.NBT.read(data)
-      {ench, data}
-    end
+    defp slot_nbt(<<0, data::binary>>), do: {nil, data}
+    defp slot_nbt(data), do: McProtocol.NBT.read(data)
 
     def varint_length_binary(data) do
       {length, data} = varint(data)
@@ -193,6 +183,14 @@ defmodule McProtocol.DataTypes do
     end
     def chat(struct) do
       string(Poison.Encoder.encode(struct, []))
+    end
+
+    def slot(%McProtocol.DataTypes.Slot{id: -1}), do: -1
+    def slot(slot) do
+      [ <<slot.id::unsigned-integer-2*8,
+          slot.count::unsigned-integer-1*8,
+          slot.damage::unsigned-integer-2*8>>,
+        McProtocol.NBT.write(slot.nbt)]
     end
 
     def varint_length_binary(data) do

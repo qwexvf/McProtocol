@@ -123,7 +123,7 @@ defmodule McProtocol.NBT do
     @moduledoc false
 
     def write(struct, optional \\ false) do
-      if (!struct or (struct == :nil)) and optional do
+      if (!struct or (struct == nil)) and optional do
         write_tag_id(:end)
       else
         {:compound, name, value} = struct
