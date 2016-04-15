@@ -190,7 +190,7 @@ defmodule McProtocol.DataTypes do
       [ <<slot.id::unsigned-integer-2*8,
           slot.count::unsigned-integer-1*8,
           slot.damage::unsigned-integer-2*8>>,
-        McProtocol.NBT.write(slot.nbt)]
+        McProtocol.NBT.write(slot.nbt, true)]
     end
 
     def varint_length_binary(data) do
