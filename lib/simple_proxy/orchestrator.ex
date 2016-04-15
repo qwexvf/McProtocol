@@ -1,5 +1,5 @@
 defmodule McProtocol.SimpleProxy.Orchestrator do
-  use McProtocol.Acceptor.Orchestrator.Server
+  use McProtocol.Orchestrator.Server
 
   def init(connection_pid) do
     {:ok, %{connection: connection_pid}}
