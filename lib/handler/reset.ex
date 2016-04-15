@@ -63,4 +63,36 @@ defmodule McProtocol.Handler.Reset do
     {[], state}
   end
 
+  def respawn_into_world(
+        respawn_state,
+        stash = %{direction: :Client, mode: :Play, play_mode: :reset}) do
+    # TODO: Reduced debug info
+
+    respawn_base = [
+      {:send_packet,
+       %Server.Play.Respawn{
+         dimension: respawn_state.dimension,
+         difficulty: respawn_state.difficulty,
+         gamemode: respawn_state.difficulty,
+         level_type: respawn_state.level_type,
+       }},
+      {:stash, %{stash | play_mode: :in_world}}
+    ]
+
+    if respawn_state.dimension == 0 do
+      [
+        {:send_packet,
+         %Server.Play.Respawn{
+           dimension: 1,
+           difficulty: 0,
+           gamemode: 0,
+           level_type: "default",
+         }}
+        | respawn_base
+      ]
+    else
+      respawn_base
+    end
+  end
+
 end

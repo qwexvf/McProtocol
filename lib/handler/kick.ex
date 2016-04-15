@@ -1,15 +1,21 @@
 defmodule McProtocol.Handler.Kick do
   use McProtocol.Handler
 
+  @moduledoc """
+  Kicks the player from the server with a message. Can be used in Login and Play.
+
+  The argument should be a map in the Chat format.
+  """
+
   alias McProtocol.Packet.Server
 
   def enter(reason, %{direction: :Client, mode: :Login}) do
     transitions = [
       {:send_packet,
        %Server.Login.Disconnect{
-         reason: reason,
+         reason: Poison.encode!(reason),
        }},
-      :close
+      :close,
     ]
     {transitions, nil}
   end
@@ -17,11 +23,13 @@ defmodule McProtocol.Handler.Kick do
     transitions = [
       {:send_packet,
        %Server.Play.KickDisconnect{
-         reason: reason,
-       }}
+         reason: Poison.encode!(reason),
+       }},
+      :close,
     ]
+    {transitions, nil}
   end
 
-  def handle(_, _, _), do: raise "should not happen"
+  def handle(_, _, _), do: raise "should never happen"
 
 end

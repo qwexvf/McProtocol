@@ -72,7 +72,7 @@ defmodule McProtocol.EntityMeta do
 
   def write(input), do: write_data(input, [])
 
-  defp write_data([], data), do: data
+  defp write_data([], data), do: [data, <<0xff::unsigned-1*8>>]
   defp write_data([item | rest], data) do
     write_data(rest, [data, write_item(item)])
   end
