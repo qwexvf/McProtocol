@@ -16,7 +16,8 @@ defmodule McProtocol.SimpleProxy.Orchestrator do
     {McProtocol.Handler.Login, %{}, state}
   end
   def handle_next(McProtocol.Handler.Login, _, state) do
-    {McProtocol.Handler.Kick, %{text: "boo"}, state}
+    # {McProtocol.Handler.Kick, %{text: "boo"}, state}
+    {McProtocol.Handler.Proxy, %{}, state}
   end
 
 end

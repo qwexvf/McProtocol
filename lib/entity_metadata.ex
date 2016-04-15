@@ -70,7 +70,7 @@ defmodule McProtocol.EntityMeta do
   end
   defp read_type(data, :block_id), do: Decode.varint(data)
 
-  def write(input), do: write_data(input, [])
+  def write(input), do: IO.inspect write_data(input, [])
 
   defp write_data([], data), do: [data, <<0xff::unsigned-1*8>>]
   defp write_data([item | rest], data) do
@@ -78,7 +78,7 @@ defmodule McProtocol.EntityMeta do
   end
 
   defp write_item({index, type, value}) do
-    [<<index::unsigned-1*8>>, write_type(type, value)]
+    [<<index::unsigned-1*8>>, type_idx(type), write_type(type, value)]
   end
 
   defp write_type(:byte, value), do: Encode.byte(value)
