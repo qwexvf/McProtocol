@@ -70,7 +70,7 @@ defmodule McProtocol.EntityMeta do
   end
   defp read_type(data, :block_id), do: Decode.varint(data)
 
-  def write(input), do: IO.inspect write_data(input, [])
+  def write(input), do: write_data(input, [])
 
   defp write_data([], data), do: [data, <<0xff::unsigned-1*8>>]
   defp write_data([item | rest], data) do
