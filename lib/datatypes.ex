@@ -186,7 +186,8 @@ defmodule McProtocol.DataTypes do
     end
 
     def slot(%McProtocol.DataTypes.Slot{id: -1}), do: -1
-    def slot(slot) do
+    def slot(nil), do: -1
+    def slot(%McProtocol.DataTypes.Slot{} = slot) do
       [ <<slot.id::unsigned-integer-2*8,
           slot.count::unsigned-integer-1*8,
           slot.damage::unsigned-integer-2*8>>,

@@ -86,5 +86,6 @@ defmodule McProtocol.EntityMeta do
   defp write_type(:float, value), do: Encode.float(value)
   defp write_type(:string, value), do: Encode.string(value)
   defp write_type(:chat, value), do: Encode.chat(value)
+  defp write_type(:slot, value), do: Encode.slot(value)
 
 end
