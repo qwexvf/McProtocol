@@ -90,6 +90,9 @@ for mode <- packets, {id, ident, type_name} <- mode.packets do
 
     defstruct unquote(Macro.escape(fields))
 
+    # Useful for debugging
+    def compiler_output, do: unquote(Macro.escape(compiled))
+
     def read(unquote(ProtoDef.Type.data_var)) do
       {resp, rest} = unquote(compiled.decoder_ast)
       resp = Map.put(resp, :__struct__, __MODULE__)

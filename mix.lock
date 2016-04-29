@@ -3,10 +3,11 @@
   "credo": {:hex, :credo, "0.3.6"},
   "cutkey": {:git, "https://github.com/imtal/cutkey.git", "67375ea3d2ee3c729bc9a93baca447203930fd12", []},
   "earmark": {:hex, :earmark, "0.2.1"},
+  "estree": {:hex, :estree, "2.3.0"},
   "ex_doc": {:hex, :ex_doc, "0.11.4"},
   "json_minecraft_data": {:git, "https://github.com/PrismarineJS/minecraft-data.git", "a13abc7f468698e5e37592dca6faefdcd6527cb4", [ref: "a13abc7f468698e5e37592dca6faefdcd6527cb4"]},
   "mc_data": {:hex, :mc_data, "0.0.5"},
   "minecraft_data": {:git, "https://github.com/PrismarineJS/minecraft-data.git", "a13abc7f468698e5e37592dca6faefdcd6527cb4", []},
   "poison": {:hex, :poison, "2.1.0"},
-  "proto_def": {:hex, :proto_def, "0.0.2"},
+  "proto_def": {:hex, :proto_def, "0.0.4"},
   "uuid": {:hex, :uuid, "1.1.3"}}
