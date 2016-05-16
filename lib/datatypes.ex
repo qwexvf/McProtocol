@@ -185,6 +185,7 @@ defmodule McProtocol.DataTypes do
       string(Poison.Encoder.encode(struct, []))
     end
 
+    def slot(%McProtocol.DataTypes.Slot{id: nil}), do: <<-1::signed-integer-2*8>>
     def slot(%McProtocol.DataTypes.Slot{id: -1}), do: <<-1::signed-integer-2*8>>
     def slot(nil), do: <<-1::signed-integer-2*8>>
     def slot(%McProtocol.DataTypes.Slot{} = slot) do
