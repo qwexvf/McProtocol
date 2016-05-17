@@ -3,17 +3,18 @@ defmodule McProtocol.Acceptor.SimpleAcceptor do
 
   @tcp_listen_options [:binary, packet: :raw, active: false, reuseaddr: true]
 
-  def accept(port, accept_fun) do
+  def accept(port, accept_fun, socket_transferred_fun \\ (fn (_, _) -> nil end)) do
     {:ok, listen} = :gen_tcp.listen(port, @tcp_listen_options)
     Logger.info("Listening on port #{port}")
-    accept_loop(listen, accept_fun)
+    accept_loop(listen, accept_fun, socket_transferred_fun)
   end
 
-  defp accept_loop(listen, accept_fun) do
+  defp accept_loop(listen, accept_fun, socket_transferred_fun) do
     {:ok, socket} = :gen_tcp.accept(listen)
     {:ok, pid} = accept_fun.(socket)
     :ok = :gen_tcp.controlling_process(socket, pid)
-    accept_loop(listen, accept_fun)
+    socket_transferred_fun.(pid, socket)
+    accept_loop(listen, accept_fun, socket_transferred_fun)
   end
 
 end
