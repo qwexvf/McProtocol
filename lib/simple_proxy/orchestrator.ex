@@ -17,7 +17,11 @@ defmodule McProtocol.SimpleProxy.Orchestrator do
   end
   def handle_next(McProtocol.Handler.Login, _, state) do
     # {McProtocol.Handler.Kick, %{text: "boo"}, state}
-    {McProtocol.Handler.Proxy, %{}, state}
+    args = %McProtocol.Handler.Proxy.Args{
+      host: "localhost",
+      port: 25564,
+    }
+    {McProtocol.Handler.Proxy, args, state}
   end
 
 end
