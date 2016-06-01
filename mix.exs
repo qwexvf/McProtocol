@@ -58,7 +58,7 @@ defmodule McProtocol.Mixfile do
 
   defp docs do
     [
-      extras: ["_build/PACKETS.md"],
+      extras: ["_build/shared/PACKETS.md"],
     ]
   end
 end

@@ -3,7 +3,13 @@ defmodule McProtocol.Packet.DocCollector do
 
   # Client
 
-  def start_link(path \\ "./_build/PACKETS.md") do
+  defp default_build_path do
+    Mix.Project.build_path(build_per_environment: false) <> "/PACKETS.md"
+  end
+
+  def start_link(path \\ nil) do
+    path = path || default_build_path
+    File.mkdir_p!(Path.dirname(path))
     GenServer.start_link(__MODULE__, path)
   end
 
