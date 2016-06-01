@@ -79,10 +79,16 @@ defmodule McProtocol.Packet do
 
 end
 
+{:ok, doc_collector} = McProtocol.Packet.DocCollector.start_link()
+
 for mode <- packets, {id, ident, type_name} <- mode.packets do
   module = McProtocol.Packet.Utils.make_module_name(mode.direction, mode.state, ident)
   compiled = ProtoDef.compile_json_type(mode.types[type_name], ctx)
   fields = Enum.map(compiled.structure, fn {name, _} -> name end)
+
+  doc_data = Map.merge(compiled,
+                       %{module: module, id: id, ident: ident, type_name: type_name})
+  McProtocol.Packet.DocCollector.collect_packet(doc_collector, doc_data)
 
   contents = quote do
     @behaviour McProtocol.Packet
@@ -113,3 +119,4 @@ for mode <- packets, {id, ident, type_name} <- mode.packets do
 
 end
 
+McProtocol.Packet.DocCollector.finish(doc_collector)

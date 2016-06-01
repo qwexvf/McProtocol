@@ -2,6 +2,7 @@ defmodule McProtocol.Handler.Proxy do
   use McProtocol.Handler
   use GenServer
 
+  alias McProtocol.Packet.{Client, Server}
   alias McProtocol.Connection.{Reader, Writer}
 
   defmodule Args do
@@ -46,10 +47,12 @@ defmodule McProtocol.Handler.Proxy do
 
     {:ok, writer} = Writer.start_link(socket)
 
-    Writer.write_struct(
-      writer,
-      %Client.Handshake.SetProtocol{}
-    )
+    #Writer.write_struct(
+    #  writer,
+    #  %Client.Handshake.SetProtocol{
+    #    
+    #  }
+    #)
 
     state = %{
       socket: socket,

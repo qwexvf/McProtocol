@@ -9,7 +9,8 @@ defmodule McProtocol.Mixfile do
      start_permanent: Mix.env == :prod,
      description: description,
      package: package,
-     deps: deps]
+     deps: deps,
+     docs: docs]
   end
 
   # Configuration for the OTP application
@@ -52,6 +53,12 @@ defmodule McProtocol.Mixfile do
       maintainers: ["hansihe"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/McEx/McProtocol"},
+    ]
+  end
+
+  defp docs do
+    [
+      extras: ["_build/PACKETS.md"],
     ]
   end
 end
