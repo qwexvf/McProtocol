@@ -18,7 +18,8 @@ defmodule McProtocol.Crypto.ServerKeyProvider do
   # Private
 
   def init(:ok) do
-    {:ok, private_key} = :cutkey.rsa(1024, 65537, return: :key)
+    # {:ok, private_key_1} = :cutkey.rsa(1024, 65537, return: :key)
+    private_key = McProtocol.Util.GenerateRSA.gen(1024)
     private_key_data = rsa_priv_key(private_key)
     public_key = rsa_pub_key(modulus: private_key_data[:modulus], publicExponent: private_key_data[:publicExponent])
     {:SubjectPublicKeyInfo, public_key_asn, :not_encrypted} = :public_key.pem_entry_encode(:SubjectPublicKeyInfo, public_key)
