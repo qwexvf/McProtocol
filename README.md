@@ -6,7 +6,7 @@ Aims to provide functional ways to interact with the minecraft protocol on all l
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+The package can be installed as:
 
   1. Add elixir_mc_protocol to your list of dependencies in `mix.exs`:
 
@@ -19,3 +19,6 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         def application do
           [applications: [:elixir_mc_protocol]]
         end
+
+## Documentation
+Documentation can be found [here](https://hexdocs.pm/mc_protocol/api-reference.html) with some usages [here](https://github.com/McEx/McProtocol/tree/master/test)
