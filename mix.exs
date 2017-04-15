@@ -17,7 +17,7 @@ defmodule McProtocol.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :cutkey]]
+    [applications: [:logger]]
   end
 
   # Dependencies can be Hex packages:
@@ -30,8 +30,7 @@ defmodule McProtocol.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:cutkey, github: "imtal/cutkey", optional: true},
-     {:uuid, "~> 1.1"},
+    [{:uuid, "~> 1.1"},
      {:proto_def, "~> 0.0.4"},
      {:mc_data, "~> 0.0.5"},
      {:credo, "~> 0.3", only: [:dev, :test]},

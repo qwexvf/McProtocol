@@ -3,9 +3,9 @@ defmodule McProtocol.EntityMetaTest do
   alias McProtocol.EntityMeta
 
   test "type idx conversion" do
-    assert EntityMeta.type_idx(:short) == 1
-    assert EntityMeta.idx_type(1) == :short
-    assert EntityMeta.type_idx(:pos) == 6
-    assert EntityMeta.idx_type(6) == :pos
+    assert EntityMeta.type_idx(:varint) == 1
+    assert EntityMeta.idx_type(1) == :varint
+    assert EntityMeta.type_idx(:position) == 8
+    assert EntityMeta.idx_type(8) == :position
   end
 end
