@@ -2,15 +2,17 @@ defmodule McProtocol.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :mc_protocol,
-     version: "0.0.2",
-     elixir: "~> 1.2",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     description: description,
-     package: package,
-     deps: deps,
-     docs: docs]
+    [
+      app: :mc_protocol,
+      version: "0.0.2",
+      elixir: "~> 1.2",
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      description: description(),
+      package: package(),
+      deps: deps(),
+      docs: docs()
+    ]
   end
 
   # Configuration for the OTP application
@@ -30,13 +32,15 @@ defmodule McProtocol.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:uuid, "~> 1.1"},
-     {:proto_def, "~> 0.0.4"},
-     {:mc_data, "~> 0.0.5"},
-     {:credo, "~> 0.3", only: [:dev, :test]},
-     {:earmark, "~> 0.1", only: :dev},
-     {:ex_doc, "~> 0.11", only: :dev},
-     {:benchfella, "~> 0.3.0", only: [:dev, :test]}]
+    [
+      {:uuid, "~> 1.1"},
+      {:proto_def, "~> 0.0.4"},
+      {:mc_data, "~> 0.0.5"},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:earmark, "~> 1.4", only: :dev},
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
+      {:benchfella, "~> 0.3.0", only: [:dev, :test]}
+    ]
   end
 
   defp description do
