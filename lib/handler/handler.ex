@@ -1,7 +1,5 @@
 defmodule McProtocol.Handler do
-
   @type t :: module
-
   @moduledoc """
   Basic component for the connection state machine.
 
@@ -138,5 +136,4 @@ defmodule McProtocol.Handler do
       entity_id: 0,
     )
   end
-
 end

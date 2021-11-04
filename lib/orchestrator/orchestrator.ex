@@ -1,5 +1,4 @@
 defmodule McProtocol.Orchestrator do
-
   @moduledoc """
   Orchestrates what Handler is active at what time.
 
@@ -21,14 +20,16 @@ defmodule McProtocol.Orchestrator do
   @doc """
   Called when a handler has given up control of the connection.
   """
-  @callback next(orchestrator_pid :: pid, last_handler ::
-                 {McProtocol.Handler.t, return_val :: any | :crash} | :connect)
-  :: {McProtocol.Handler.t, any}
+  @callback next(
+              orchestrator_pid :: pid,
+              last_handler ::
+                {McProtocol.Handler.t(), return_val :: any | :crash} | :connect
+            ) ::
+              {McProtocol.Handler.t(), any}
 
   defmacro __using__(opts) do
     quote do
       @behaviour McProtocol.Orchestrator
     end
   end
-
 end

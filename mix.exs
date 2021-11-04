@@ -6,8 +6,8 @@ defmodule McProtocol.Mixfile do
       app: :mc_protocol,
       version: "0.0.2",
       elixir: "~> 1.2",
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       deps: deps(),
@@ -55,13 +55,13 @@ defmodule McProtocol.Mixfile do
       files: ["lib", "priv", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["hansihe"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/McEx/McProtocol"},
+      links: %{"GitHub" => "https://github.com/McEx/McProtocol"}
     ]
   end
 
   defp docs do
     [
-      extras: ["_build/shared/PACKETS.md"],
+      extras: ["_build/shared/PACKETS.md"]
     ]
   end
 end

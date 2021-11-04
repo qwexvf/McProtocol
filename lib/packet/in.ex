@@ -53,5 +53,4 @@ defmodule McProtocol.Packet.In do
   end
   # We already decoded the packet, don't do it again
   def fetch_packet(%__MODULE__{} = holder), do: holder
-
 end

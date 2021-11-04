@@ -27,5 +27,4 @@ defmodule McProtocol.Handler.Handshake do
 
     {transitions, nil}
   end
-
 end

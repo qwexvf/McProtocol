@@ -37,7 +37,6 @@ defmodule McProtocol.Handler.Proxy do
   end
 
   def handle_call({:enter, stash}, _from, args) do
-
     {:ok, socket} = :gen_tcp.connect(String.to_char_list(args.host), args.port, @socket_connect_opts)
 
     control_process = self
@@ -64,13 +63,10 @@ defmodule McProtocol.Handler.Proxy do
   end
 
   def handle_call({:client_packet, packet, stash}, _from, state) do
-    IO.inspect packet
     {:reply, :ok, state}
   end
 
   def handle_call({:server_packet, data}, _from, state) do
-    IO.inspect data
     {:reply, :ok, state}
   end
-
 end

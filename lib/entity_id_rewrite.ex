@@ -1,8 +1,6 @@
 defmodule McProtocol.EntityIdRewrite.Util do
-
   def rewrite_info(module) when is_atom(module), do: {module, [:entity_id]}
   def rewrite_info({module, field}), do: {module, field}
-
 end
 
 defmodule McProtocol.EntityIdRewrite do
@@ -35,9 +33,8 @@ defmodule McProtocol.EntityIdRewrite do
     Server.Play.EntityTeleport,
     Server.Play.EntityUpdateAttributes,
     Server.Play.EntityEffect,
-
     {Client.Play.UseEntity, [:target]},
-    Client.Play.EntityAction,
+    Client.Play.EntityAction
   ]
 
   def rewrite_eid(eid, {eid, replace}), do: replace
@@ -45,30 +42,36 @@ defmodule McProtocol.EntityIdRewrite do
   def rewrite_eid(eid, {_, _}), do: eid
 
   def rewrite(packet = %Server.Play.EntityDestroy{}, ids) do
-    %{packet |
-      entity_ids: Enum.map(packet.entity_ids, fn
-        eid -> rewrite_eid(eid, ids)
-      end)
-     }
+    %{
+      packet
+      | entity_ids:
+          Enum.map(packet.entity_ids, fn
+            eid -> rewrite_eid(eid, ids)
+          end)
+    }
   end
 
   def rewrite(packet = %Server.Play.CombatEvent{event: 1}, ids) do
     %{packet | entity_id: rewrite_eid(packet.entity_id, ids)}
   end
+
   def rewrite(packet = %Server.Play.CombatEvent{event: 2}, ids) do
-    %{packet |
-      entity_id: rewrite_eid(packet.entity_id, ids),
-      player_id: rewrite_eid(packet.player_id, ids),
-     }
+    %{
+      packet
+      | entity_id: rewrite_eid(packet.entity_id, ids),
+        player_id: rewrite_eid(packet.player_id, ids)
+    }
   end
 
   def rewrite(packet = %Server.Play.SetPassengers{}, ids) do
-    %{packet |
-      entity_id: rewrite_eid(packet.entity_id, ids),
-      passengers: Enum.map(packet.passengers, fn
-        eid -> rewrite_eid(eid, ids)
-      end)
-     }
+    %{
+      packet
+      | entity_id: rewrite_eid(packet.entity_id, ids),
+        passengers:
+          Enum.map(packet.passengers, fn
+            eid -> rewrite_eid(eid, ids)
+          end)
+    }
   end
 
   for rewrite_data <- rewrites do
@@ -77,27 +80,24 @@ defmodule McProtocol.EntityIdRewrite do
     packet_var = Macro.var(:packet, __MODULE__)
     ids_var = Macro.var(:ids, __MODULE__)
 
-    fields = Enum.map(fields, fn
-      field ->
-        {field,
-         quote do
-           rewrite_eid(
-             unquote(packet_var).unquote(field),
-             unquote(ids_var)
-           )
-         end
-        }
-    end)
+    fields =
+      Enum.map(fields, fn
+        field ->
+          {field,
+           quote do
+             rewrite_eid(
+               unquote(packet_var).unquote(field),
+               unquote(ids_var)
+             )
+           end}
+      end)
 
     def rewrite(unquote(packet_var) = %unquote(module){}, unquote(ids_var)) do
-      %{unquote(packet_var) |
-        unquote_splicing(fields)
-       }
+      %{unquote(packet_var) | unquote_splicing(fields)}
     end
   end
 
   def rewrite(packet, _) do
     packet
   end
-
 end

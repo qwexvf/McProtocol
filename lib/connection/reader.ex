@@ -17,31 +17,32 @@ defmodule McProtocol.Connection.Reader do
   def set_encryption(pid, encr = %CryptData{}) do
     GenServer.call(pid, {:set_encryption, encr})
   end
+
   def set_compression(pid, compr) do
     GenServer.call(pid, {:set_compression, compr})
   end
 
   # Server
 
-  defstruct [
-    state: :init,
-    socket: nil,
-    read_state: nil,
-    sink: nil,
-  ]
+  defstruct state: :init,
+            socket: nil,
+            read_state: nil,
+            sink: nil
 
   def init({socket, sink_fun}) do
     state = %__MODULE__{
       socket: socket,
-      read_state: Read.initial_state,
-      sink: sink_fun,
+      read_state: Read.initial_state(),
+      sink: sink_fun
     }
+
     {:ok, state}
   end
 
   def handle_call(:start_reading, _from, state = %__MODULE__{state: :init}) do
-    state = %{state | state: :started}
-    |> recv_once
+    state =
+      %{state | state: :started}
+      |> recv_once
 
     {:reply, :ok, state}
   end
@@ -51,23 +52,28 @@ defmodule McProtocol.Connection.Reader do
     state = %{state | read_state: read_state}
     {:reply, :ok, state}
   end
+
   def handle_call({:set_compression, encr}, _from, state) do
     read_state = Read.set_compression(state.read_state, encr)
     state = %{state | read_state: read_state}
     {:reply, :ok, state}
   end
 
-  def handle_info({:tcp, socket, data},
-                  state = %__MODULE__{socket: socket, state: :started}) do
+  def handle_info(
+        {:tcp, socket, data},
+        state = %__MODULE__{socket: socket, state: :started}
+      ) do
     {packets, read_state} = Read.process(data, state.read_state)
 
     Enum.map(packets, &state.sink.(:packet, &1))
 
-    state = %{state | read_state: read_state}
-    |> recv_once
+    state =
+      %{state | read_state: read_state}
+      |> recv_once
 
     {:noreply, state}
   end
+
   def handle_info({:tcp_closed, socket}, state = %__MODULE__{socket: socket}) do
     state.sink.(:closed, :tcp_closed)
     {:stop, {:shutdown, :tcp_closed}, state}
@@ -77,5 +83,4 @@ defmodule McProtocol.Connection.Reader do
     :inet.setopts(state.socket, active: :once)
     state
   end
-
 end

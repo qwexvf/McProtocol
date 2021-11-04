@@ -1,4 +1,6 @@
 defmodule McProtocol.DataTypes.Encode do
+  use Bitwise
+
   def byte_flags(bin) do
     bin
   end
@@ -6,7 +8,9 @@ defmodule McProtocol.DataTypes.Encode do
   @spec varint(integer) :: binary
   def varint(num) when num <= 127, do: <<0::1, num::7>>
   def varint(num) when num >= 128 do
-    <<1::1, band(num, 127)::7, varint(num >>> 7)::binary>>
+    <<1::1,
+      band(num, 127)::7,
+      varint(num >>> 7)::binary>>
   end
 
   @spec bool(boolean) :: binary

@@ -14,6 +14,7 @@ defmodule McProtocol.Connection.Writer do
   def write_struct(pid, packet) do
     GenServer.cast(pid, {:write_struct, packet})
   end
+
   def write_raw(pid, data) do
     GenServer.cast(pid, {:write_raw, data})
   end
@@ -21,22 +22,22 @@ defmodule McProtocol.Connection.Writer do
   def set_encryption(pid, encr = %CryptData{}) do
     GenServer.call(pid, {:set_encryption, encr})
   end
+
   def set_compression(pid, compr) do
     GenServer.call(pid, {:set_compression, compr})
   end
 
   # Server
 
-  defstruct [
-    socket: nil,
-    write_state: nil,
-  ]
+  defstruct socket: nil,
+            write_state: nil
 
   def init(socket) do
     state = %__MODULE__{
       socket: socket,
-      write_state: Write.initial_state,
+      write_state: Write.initial_state()
     }
+
     {:ok, state}
   end
 
@@ -44,6 +45,7 @@ defmodule McProtocol.Connection.Writer do
     state = out_write_struct(packet, state)
     {:noreply, state}
   end
+
   def handle_cast({:write_raw, data}, state) do
     state = out_write_data(data, state)
     {:noreply, state}
@@ -54,6 +56,7 @@ defmodule McProtocol.Connection.Writer do
     state = %{state | write_state: write_state}
     {:reply, :ok, state}
   end
+
   def handle_call({:set_compression, compr}, _from, state) do
     write_state = Write.set_compression(state.write_state, compr)
     state = %{state | write_state: write_state}
@@ -78,7 +81,7 @@ defmodule McProtocol.Connection.Writer do
     :ok = socket_write_raw(out_data, state)
 
     # TODO: This should only be done when big packets are sent
-    :erlang.garbage_collect
+    :erlang.garbage_collect()
 
     state
   end
@@ -100,5 +103,4 @@ defmodule McProtocol.Connection.Writer do
     Logger.error(error_msg)
     exit(:packet_write_error)
   end
-
 end
